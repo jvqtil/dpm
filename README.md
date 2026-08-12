@@ -77,12 +77,13 @@ assume_source_type = "github.com"
 ```
 
 - `bin_dir` — where binaries get installed. Falls back to `sudo` automatically if the directory needs elevated permissions.
+- `cache_dir` - where dpm stores downloaded assets.
 - `assume_source_type` — the host used when you give a bare `owner/repo` without a domain.
 
 ## Where it stores
 
 - Installed packages are tracked in `~/.local/state/dpm/registry.json`.
-- Downloads are cached in `~/.cache/dpm/temp/`, keyed by package and version, so re-installing the same version doesn't re-download.
+- Downloads are cached in `cache_dir` (default: `~/.cache/dpm`), so re-installing the same version doesn't re-download.
 
 ## Known limitations
 

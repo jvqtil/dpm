@@ -11,8 +11,7 @@ import (
 )
 
 func downloadAsset(pkg *pkg) (string, error) {
-	homeDir, _ := os.UserHomeDir()
-	destDir := filepath.Join(homeDir, ".cache", "dpm", "temp", pkg.Name, pkg.Version)
+	destDir := filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
 
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create temp dir: %w", err)

@@ -10,14 +10,17 @@ import (
 
 type config struct {
 	BinDir           string `toml:"bin_dir"`
+	CacheDir         string `toml:"cache_dir"`
 	AssumeSourceType string `toml:"assume_source_type"`
 }
 
 var cfg config
 
 func defaultConfig() config {
+	homeDir, _ := os.UserHomeDir()
 	return config{
 		BinDir:           "/usr/local/bin",
+		CacheDir:         filepath.Join(homeDir, ".cache", "dpm"),
 		AssumeSourceType: "github.com",
 	}
 }
