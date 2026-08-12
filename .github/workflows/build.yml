@@ -60,10 +60,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
-          name: "dpm ${{ github.event.inputs.version }} | Build: ${{ github.event.inputs.build }}"
+          name: "${{ github.event.inputs.version }}"
           generate_release_notes: true
           body: |
-            # dpm prebuilt binaries
+            Build date: ${{ github.event.inputs.build }}
           files: |
             dist/dpm-linux-amd64
             dist/dpm-linux-arm64
