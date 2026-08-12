@@ -2,6 +2,11 @@
 
 A package manager that just works. Insanely fast
 
+**[Install](#install)** · **[Build](#build)** · **[Usage](#usage)** · **[Config](#config)**
+
+> [!NOTE]
+> dpm is in early stage. Please report any bugs / problems via Github Issues. Contributions are welcome!
+
 ## Install
 
 ```sh
@@ -80,7 +85,7 @@ assume_source_type = "github.com"
 - `cache_dir` - where dpm stores downloaded assets.
 - `assume_source_type` — the host used when you give a bare `owner/repo` without a domain.
 
-## Where it stores
+## Where it stores data
 
 - Installed packages are tracked in `~/.local/state/dpm/registry.json`.
 - Downloads are cached in `cache_dir` (default: `~/.cache/dpm`), so re-installing the same version doesn't re-download. Use `dpm cache clear` to empty the directory.
