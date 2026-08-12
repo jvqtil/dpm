@@ -10,6 +10,14 @@ go install github.com/jvqtil/dpm@latest
 
 Or download a binary from [Releases](https://github.com/jvqtil/dpm/releases).
 
+## Build
+
+```sh
+git clone https://github.com/jvqtil/dpm
+cd dpm
+go build
+```
+
 ## Usage
 
 ```sh
