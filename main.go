@@ -64,6 +64,15 @@ func main() {
 		} else {
 			err = listTarget(resolvePkgName(args[0]))
 		}
+	case "cache":
+		if needsHelp(args) || len(args) < 1 {
+			showHelp(cacheHelp)
+			return
+		}
+		switch args[0] {
+		case "clear", "clean", "wipe", "c":
+			clearCache()
+		}
 	default:
 		fmt.Println("Unknown command:", os.Args[1])
 		return

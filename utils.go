@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 )
 
 var (
 	green = color.New(color.FgGreen).SprintFunc()
+	red   = color.New(color.FgRed).SprintFunc()
 )
 
 func resolveTag(input string) (source, tag string) {
@@ -119,5 +121,34 @@ func rmBin(target string) error {
 		return fmt.Errorf("sudo rm failed: %w", err)
 	}
 
+	return nil
+}
+
+func dirSize(path string) (size int64) {
+	filepath.Walk(path, func(_ string, info os.FileInfo, _ error) error {
+		if info != nil && !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	return
+}
+
+func clearCache() error {
+	cacheSize := dirSize(cfg.CacheDir)
+	cacheSizeFmt := humanize.Bytes(uint64((cacheSize)))
+	if cacheSize == 0 {
+		fmt.Println("=> Cache directory is empty, nothing to clear")
+		return nil
+	}
+	if !confirm(fmt.Sprintf("=> Cache directory size: %s.\nClear cache?", red(cacheSizeFmt))) {
+		return nil
+	}
+
+	if err := os.RemoveAll(cfg.CacheDir); err != nil {
+		return fmt.Errorf("failed to clear cache directory: %w", err)
+	}
+
+	fmt.Printf("=> Cleared %s of cache\n", red(cacheSizeFmt))
 	return nil
 }

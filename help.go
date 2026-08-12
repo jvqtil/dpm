@@ -71,6 +71,15 @@ USAGE:
 Without arguments, lists all installed packages with their versions.
 With a package name, shows full details: source, binary path, install date, etc.`
 
+const cacheHelp = `dpm cache - manage downloads cache
+
+USAGE:
+  dpm cache clear
+  dpm cache clean
+  dpm cache wipe
+
+Clears cached downloads from "cache_dir" in your config (default: "~/.cache/dpm").`
+
 const helpFooter = `
 Version: dpm %s
 More info: https://github.com/jvqtil/dpm`

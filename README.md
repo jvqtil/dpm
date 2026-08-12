@@ -83,7 +83,7 @@ assume_source_type = "github.com"
 ## Where it stores
 
 - Installed packages are tracked in `~/.local/state/dpm/registry.json`.
-- Downloads are cached in `cache_dir` (default: `~/.cache/dpm`), so re-installing the same version doesn't re-download.
+- Downloads are cached in `cache_dir` (default: `~/.cache/dpm`), so re-installing the same version doesn't re-download. Use `dpm cache clear` to empty the directory.
 
 ## Known limitations
 
