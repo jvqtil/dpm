@@ -1,0 +1,43 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/BurntSushi/toml"
+)
+
+type config struct {
+	BinDir           string `toml:"bin_dir"`
+	AssumeSourceType string `toml:"assume_source_type"`
+}
+
+var cfg config
+
+func defaultConfig() config {
+	return config{
+		BinDir:           "/usr/local/bin",
+		AssumeSourceType: "github.com",
+	}
+}
+
+func initConfig() error {
+	homeDir, _ := os.UserHomeDir()
+	path := filepath.Join(homeDir, ".config", "dpm", "config.toml")
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to read config: %w", err)
+	}
+
+	cfg = defaultConfig()
+	if _, err := toml.Decode(string(data), &cfg); err != nil {
+		return fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	return nil
+}
