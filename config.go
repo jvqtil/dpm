@@ -29,6 +29,7 @@ func initConfig() error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
+			cfg = defaultConfig()
 			return nil
 		}
 		return fmt.Errorf("failed to read config: %w", err)
