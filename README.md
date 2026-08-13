@@ -45,7 +45,7 @@ dpm <command> [args]
 | `update` | `u` | Update packages |
 | `remove` | `r` | Remove a package |
 | `list` | `l` | List installed packages |
-| `cache` | Manage cache
+| `cache` | | Manage cache |
 
 Run `dpm <command> -h` for details on any command.
 
