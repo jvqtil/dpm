@@ -41,8 +41,7 @@ func update(i registryItem, pkg *pkg) error {
 	}
 
 	if err := saveRegistry(reg); err != nil {
-		rmBin(dest)
-		return fmt.Errorf("failed to save registry, rolled back: %w", err)
+		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
 	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), i.Version, pkg.Version)
