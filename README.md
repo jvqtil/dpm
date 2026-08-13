@@ -6,13 +6,13 @@ A package manager that just works. Insanely fast
 
 ## Features
 - Installing packages from
-  - Github releases
+  - GitHub releases
   - Local binaries
 - Managing packages (Updating / Listing / Removing)
-- Chaning install path, cache directory, etc. See [Config](#config) for details
+- Changing install path, cache directory, etc. See [config section](#config) for details
 
 > [!NOTE]
-> dpm is in early stage. Please report any bugs / problems via Github Issues. Contributions are welcome!
+> dpm is in early stage. Please report any bugs / problems via GitHub Issues. Contributions are welcome!
 
 ## Install
 
@@ -85,10 +85,11 @@ dpm l gh-cli     # source, binary path, install date, etc.
 
 ```toml
 bin_dir = "/usr/local/bin"
+cache_dir = "~/.cache/dpm"
 assume_source_type = "github.com"
 ```
 
-- `bin_dir` — where binaries get installed. Falls back to `sudo` automatically if the directory needs elevated permissions.
+- `bin_dir` — where binaries are being installed. Falls back to `sudo` automatically if the directory needs elevated permissions.
 - `cache_dir` - where dpm stores downloaded assets.
 - `assume_source_type` — the host used when you give a bare `owner/repo` without a domain.
 
