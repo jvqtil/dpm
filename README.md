@@ -6,8 +6,8 @@ A package manager that just works. Insanely fast
 
 ## Features
 - Installing packages from
-  1. Github releases (binaries only)
-  2. Local binaries
+  - Github releases (binaries only)
+  - Local binaries
 - Managing packages (Updating / Listing / Removing)
 - Chaning install path, cache directory, etc. See [Config](#config) for details
 
