@@ -10,6 +10,66 @@ import (
 	"strings"
 )
 
+func resolveBinary(pkg *pkg) (string, error) {
+	var destDir string
+	switch pkg.SourceType {
+	case "github.com":
+		destDir = filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
+	default:
+		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, pkg.Version)
+	}
+	src, err := downloadAsset(pkg, destDir)
+	if err != nil {
+		return "", err
+	}
+
+	if !isArchive(pkg.AssetName) {
+		return src, nil
+	}
+
+	files, err := extractArchive(src)
+	if err != nil {
+		return "", fmt.Errorf("failed to extract archive: %w", err)
+	}
+
+	var candidates []string
+	for _, f := range files {
+		if !isDocFile(f) {
+			candidates = append(candidates, f)
+		}
+	}
+	if len(candidates) == 0 {
+		return "", fmt.Errorf("archive contains no binaries")
+	}
+	if len(candidates) == 1 {
+		return candidates[0], nil
+	}
+
+	for _, c := range candidates {
+		base := filepath.Base(c)
+		if strings.EqualFold(base, pkg.Name) || strings.EqualFold(strings.TrimSuffix(base, filepath.Ext(base)), pkg.Name) {
+			return c, nil
+		}
+	}
+
+	names := make([]string, len(candidates))
+	nameToPath := make(map[string]string, len(candidates))
+	for i, c := range candidates {
+		base := filepath.Base(c)
+		names[i] = base
+		nameToPath[base] = c
+	}
+	if matched, ok := matchByOsArch(names); ok {
+		return nameToPath[matched], nil
+	}
+
+	picked, err := pickAsset(names, fmt.Sprintf("Found %d files in archive - host: %s/%s", len(names), runtime.GOOS, runtime.GOARCH))
+	if err != nil {
+		return "", err
+	}
+	return nameToPath[picked], nil
+}
+
 func matchByOsArch(names []string) (string, bool) {
 	goos := runtime.GOOS
 	goarch := runtime.GOARCH
@@ -86,64 +146,4 @@ func pickAsset(names []string, prompt string) (string, error) {
 	}
 
 	return names[choice-1], nil
-}
-
-func resolveBinary(pkg *pkg) (string, error) {
-	var destDir string
-	switch pkg.SourceType {
-	case "github.com":
-		destDir = filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
-	default:
-		destDir = filepath.Join(cfg.CacheDir, sourceDomain(pkg.Source), pkg.Name, pkg.Version)
-	}
-	src, err := downloadAsset(pkg, destDir)
-	if err != nil {
-		return "", err
-	}
-
-	if !isArchive(pkg.AssetName) {
-		return src, nil
-	}
-
-	files, err := extractArchive(src)
-	if err != nil {
-		return "", fmt.Errorf("failed to extract archive: %w", err)
-	}
-
-	var candidates []string
-	for _, f := range files {
-		if !isDocFile(f) {
-			candidates = append(candidates, f)
-		}
-	}
-	if len(candidates) == 0 {
-		return "", fmt.Errorf("archive contains no binaries")
-	}
-	if len(candidates) == 1 {
-		return candidates[0], nil
-	}
-
-	for _, c := range candidates {
-		base := filepath.Base(c)
-		if strings.EqualFold(base, pkg.Name) || strings.EqualFold(strings.TrimSuffix(base, filepath.Ext(base)), pkg.Name) {
-			return c, nil
-		}
-	}
-
-	names := make([]string, len(candidates))
-	nameToPath := make(map[string]string, len(candidates))
-	for i, c := range candidates {
-		base := filepath.Base(c)
-		names[i] = base
-		nameToPath[base] = c
-	}
-	if matched, ok := matchByOsArch(names); ok {
-		return nameToPath[matched], nil
-	}
-
-	picked, err := pickAsset(names, fmt.Sprintf("Found %d files in archive - host: %s/%s", len(names), runtime.GOOS, runtime.GOARCH))
-	if err != nil {
-		return "", err
-	}
-	return nameToPath[picked], nil
 }

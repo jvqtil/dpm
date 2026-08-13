@@ -63,6 +63,11 @@ func fetchGhRelease(source, tag string) (*ghRelease, error) {
 	return &release, nil
 }
 
+func isGithubSource(source string) bool {
+	parts := strings.Split(strings.Trim(source, "/"), "/")
+	return len(parts) == 3 && parts[0] == "github.com"
+}
+
 func checkGithubTag(source, tag string) (*ghRelease, error) {
 	fmt.Printf("=> Fetching releases of %s%s\n", source, getTagVerb(tag))
 	release, err := fetchGhRelease(source, tag)
@@ -85,7 +90,7 @@ func resolveGithub(source, name string, release *ghRelease) (*pkg, error) {
 	return &pkg{
 		Name:       name,
 		Version:    release.TagName,
-		SourceType: sourceDomain(source),
+		SourceType: getSourceDomain(source),
 		Source:     source,
 		AssetName:  asset.Name,
 		AssetURL:   asset.URL,

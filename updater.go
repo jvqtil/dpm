@@ -41,6 +41,7 @@ func update(i registryItem, pkg *pkg) error {
 	}
 
 	if err := saveRegistry(reg); err != nil {
+		rmBin(dest)
 		return fmt.Errorf("failed to save registry, rolled back: %w", err)
 	}
 
@@ -59,24 +60,29 @@ func updateTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	if i.SourceType == "local" {
+	var pkg *pkg
+	switch i.SourceType {
+	case "local":
 		fmt.Printf("=> %s is a local package. Local packages can't be updated. Please reinstall it manually\n", green(pkgName))
 		return nil
-	}
-
-	release, err := checkGithubTag(i.Source, "")
-	if err != nil {
-		return fmt.Errorf("failed to check version: %w", err)
-	}
-
-	if i.Version == release.TagName {
-		fmt.Printf("%s is already up to date (%s)\n", green(pkgName), i.Version)
+	case "direct":
+		fmt.Printf("=> %s was installed from direct URL. dpm can't fetch updates for it. Please reinstall it manually\n", green(pkgName))
 		return nil
-	}
+	case "github.com":
+		release, err := checkGithubTag(i.Source, "")
+		if err != nil {
+			return fmt.Errorf("failed to check version: %w", err)
+		}
 
-	pkg, err := resolveGithub(i.Source, i.PkgName, release)
-	if err != nil {
-		return err
+		if i.Version == release.TagName {
+			fmt.Printf("%s is already up to date (%s)\n", green(pkgName), i.Version)
+			return nil
+		}
+
+		pkg, err = resolveGithub(i.Source, i.PkgName, release)
+		if err != nil {
+			return err
+		}
 	}
 
 	return update(i, pkg)
@@ -102,7 +108,7 @@ func updateAll() error {
 
 	fmt.Println("Checking for updates, might take some time...")
 	for _, i := range reg.Packages {
-		if i.SourceType != "local" {
+		if i.SourceType == "github.com" {
 			release, err := fetchGhRelease(i.Source, "")
 			if err != nil {
 				fmt.Printf("Skipping %s: %v\n", i.PkgName, err)
