@@ -9,7 +9,8 @@ A package manager that just works. Insanely fast
   - GitHub releases
   - Local binaries
 - Managing packages (Updating / Listing / Removing)
-- Automatching binary from GitHub releases / unpacked archives based on OS and Architecture
+- Version rollback - if you want to rollback to `v1.1.0` to `v1.0.9`, you don't need to re-download binary
+- Auto-matching binary from GitHub releases / unpacked archives based on OS and Architecture
 - Changing install path, cache directory, etc. See [config section](#config) for details
 - Automatically assumes source if not provided (`jvqtil/dpm` -> `github.com/jvqtil/dpm`). See [config section](#config) for details
 
