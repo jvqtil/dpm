@@ -16,6 +16,7 @@ COMMANDS:
   u, update     Update packages
   r, remove     Remove a package
   l, list       List installed packages
+  cache         Manage cached downloads
 
 Run 'dpm <command> -h' for more information on a command.`
 
@@ -30,6 +31,7 @@ ARGUMENTS:
              owner/repo              github (uses configured default host)
              github.com/owner/repo   explicit github source
              ./path, /path, ~/path   local file
+             example.com/binary      direct url
            Append @tag to pin a specific version (github) or label a local file:
              owner/repo@v1.2.3
              ./mybinary@v1.0.0
@@ -40,7 +42,8 @@ EXAMPLES:
   dpm i cli/cli@v2.40.0
   dpm i github.com/cli/cli gh-cli
   dpm i ./mybinary
-  dpm i ~/Downloads/tool@v2`
+  dpm i ~/Downloads/tool@v2
+  dpm i example.com/binary`
 
 const updateHelp = `dpm update - check for and install updates
 
@@ -51,7 +54,7 @@ USAGE:
 Without arguments, checks all installed packages and offers to update
 any that have a newer release available. With a package name, checks
 and updates just the specified one.
-Note: local packages can't be updated. Reinstall instead`
+Note: local and direct packages can't be updated. Reinstall instead`
 
 const removeHelp = `dpm remove - remove an installed package
 

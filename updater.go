@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -18,12 +19,40 @@ func update(i registryItem, pkg *pkg) error {
 	}
 
 	dest := filepath.Join(cfg.BinDir, pkg.Name)
+
+	// Back up existing binary before updating
+	backupPath := dest + ".dpm-backup"
+	if _, err := os.Stat(dest); err == nil {
+		data, err := os.ReadFile(dest)
+		if err != nil {
+			return fmt.Errorf("failed to read existing binary for backup: %w", err)
+		}
+		if err := os.WriteFile(backupPath, data, 0755); err != nil {
+			return fmt.Errorf("failed to create backup: %w", err)
+		}
+		defer os.Remove(backupPath) // Clean up backup on success
+	}
+
 	if err := cpToDest(src, dest); err != nil {
+		// Restore backup if copy failed
+		if _, statErr := os.Stat(backupPath); statErr == nil {
+			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
+				return fmt.Errorf("copy failed and restoration failed: copy error: %w, restore error: %v", err, restoreErr)
+			}
+			return fmt.Errorf("copy failed, rolled back: %w", err)
+		}
 		return err
 	}
 
 	reg, err := loadRegistry()
 	if err != nil {
+		// Restore backup if loading registry failed
+		if _, statErr := os.Stat(backupPath); statErr == nil {
+			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
+				return fmt.Errorf("failed to load registry and restoration failed: load error: %w, restore error: %v", err, restoreErr)
+			}
+			return fmt.Errorf("failed to load registry, rolled back: %w", err)
+		}
 		rmBin(dest)
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
@@ -41,7 +70,14 @@ func update(i registryItem, pkg *pkg) error {
 	}
 
 	if err := saveRegistry(reg); err != nil {
-		return fmt.Errorf("failed to save registry, rolled back: %w", err)
+		// Restore backup if saving registry failed
+		if _, statErr := os.Stat(backupPath); statErr == nil {
+			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
+				return fmt.Errorf("failed to save registry and restoration failed: save error: %w, restore error: %v", err, restoreErr)
+			}
+			return fmt.Errorf("failed to save registry, rolled back: %w", err)
+		}
+		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
 	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), i.Version, pkg.Version)
@@ -59,24 +95,31 @@ func updateTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	if i.SourceType == "local" {
+	var pkg *pkg
+	switch i.SourceType {
+	case "local":
 		fmt.Printf("=> %s is a local package. Local packages can't be updated. Please reinstall it manually\n", green(pkgName))
 		return nil
-	}
-
-	release, err := checkGithubTag(i.Source, "")
-	if err != nil {
-		return fmt.Errorf("failed to check version: %w", err)
-	}
-
-	if i.Version == release.TagName {
-		fmt.Printf("%s is already up to date (%s)\n", green(pkgName), i.Version)
+	case "direct":
+		fmt.Printf("=> %s was installed from direct URL. dpm can't fetch updates for it. Please reinstall it manually\n", green(pkgName))
 		return nil
-	}
+	case "github.com":
+		release, err := checkGithubTag(i.Source, "")
+		if err != nil {
+			return fmt.Errorf("failed to check version: %w", err)
+		}
 
-	pkg, err := resolveGithub(i.Source, i.PkgName, release)
-	if err != nil {
-		return err
+		if i.Version == release.TagName {
+			fmt.Printf("%s is already up to date (%s)\n", green(pkgName), i.Version)
+			return nil
+		}
+
+		pkg, err = resolveGithub(i.Source, i.PkgName, release)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported source type %s", i.SourceType)
 	}
 
 	return update(i, pkg)
@@ -102,7 +145,7 @@ func updateAll() error {
 
 	fmt.Println("Checking for updates, might take some time...")
 	for _, i := range reg.Packages {
-		if i.SourceType != "local" {
+		if i.SourceType == "github.com" {
 			release, err := fetchGhRelease(i.Source, "")
 			if err != nil {
 				fmt.Printf("Skipping %s: %v\n", i.PkgName, err)

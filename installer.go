@@ -23,6 +23,19 @@ func install(input, explicitName string) error {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
+	e, exists := reg.Packages[explicitName]
+	if exists {
+		var tagVerb string
+		if e.Version != "" {
+			tagVerb = "(" + e.Version + ")"
+		}
+		fmt.Printf("=> %s is already installed %s\n", green(e.PkgName), tagVerb)
+		if !confirm("Reinstall?") {
+			fmt.Println("Aborted")
+			return nil
+		}
+	}
+
 	var pkg *pkg
 	var release *ghRelease
 	if isLocalPkg(source) {
@@ -31,31 +44,25 @@ func install(input, explicitName string) error {
 			return fmt.Errorf("failed to resolve: %w", err)
 		}
 	} else {
-		source, err = normalizeSource(source)
-		if err != nil {
-			return err
+		if isGithubSource(normalizeSource(source)) {
+			source = normalizeSource(source)
+
+			release, err = checkGithubTag(source, tag)
+			if err != nil {
+				return err
+			}
+
+			pkg, err = resolveGithub(source, explicitName, release)
+			if err != nil {
+				return err
+			}
+		} else {
+			pkg, err = resolveDirect(source, explicitName, tag)
+			if err != nil {
+				return err
+			}
 		}
 
-		release, err = checkGithubTag(source, tag)
-		if err != nil {
-			return err
-		}
-	}
-
-	e, exists := reg.Packages[explicitName]
-	if exists {
-		fmt.Printf("=> %s is already installed (%s)\n", green(e.PkgName), e.Version)
-		if !confirm("Reinstall?") {
-			fmt.Println("Aborted")
-			return nil
-		}
-	}
-
-	if !isLocalPkg(source) {
-		pkg, err = resolveGithub(source, explicitName, release)
-		if err != nil {
-			return err
-		}
 	}
 
 	dest := filepath.Join(cfg.BinDir, pkg.Name)
@@ -66,14 +73,15 @@ func install(input, explicitName string) error {
 	if pkg.SourceType == "local" {
 		assetNameFmt = pkg.AssetURL
 	}
-
 	suffix := ""
 	if isArchive(pkg.AssetName) {
 		suffix = " — " + cyan("archive")
 	}
-
-	fmt.Printf("↓ %s%s (%s)\n", assetNameFmt, suffix, humanize.Bytes(uint64(pkg.AssetSize)))
-	fmt.Printf("→ %s\n", dest)
+	fmt.Printf("↓ %s%s ", assetNameFmt, suffix)
+	if pkg.AssetSize != 0 {
+		fmt.Printf("(%s)", humanize.Bytes(uint64(pkg.AssetSize)))
+	}
+	fmt.Printf("\n→ %s\n", dest)
 	fmt.Println(border)
 
 	if !exists && !confirm("Install this package?") {
@@ -111,7 +119,7 @@ func install(input, explicitName string) error {
 	}
 
 	if err := saveRegistry(reg); err != nil {
-		os.Remove(dest)
+		rmBin(dest)
 		return fmt.Errorf("failed to save registry, rolled back: %w", err)
 	}
 

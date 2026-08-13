@@ -7,6 +7,7 @@ A package manager that just works. Insanely fast
 ## Features
 - Installing packages from
   - GitHub releases
+  - Direct URLs
   - Local binaries
 - Managing packages (Updating / Listing / Removing)
 - Version rollback - if you want to rollback to `v1.1.0` to `v1.0.9`, you don't need to re-download binary
@@ -45,6 +46,7 @@ dpm <command> [args]
 | `update` | `u` | Update packages |
 | `remove` | `r` | Remove a package |
 | `list` | `l` | List installed packages |
+| `cache` | | Manage cache |
 
 Run `dpm <command> -h` for details on any command.
 
@@ -56,6 +58,7 @@ dpm i cli/cli@v2.40.0               # pin a specific tag
 dpm i github.com/cli/cli gh-cli     # explicit source + custom name
 dpm i ./mybinary                    # take a local file under management
 dpm i ~/Downloads/tool@v2           # local file with a version label
+dpm i example.com/binary            # binary on a remote website
 ```
 
 `dpm` looks at the release assets, tries to auto-match one for your OS/arch, and falls back to asking you to pick if it can't decide.
@@ -103,5 +106,5 @@ assume_source_type = "github.com"
 
 ## Known limitations
 
-- Only GitHub releases and local files are supported for now. Very soon we'll have support for Codeberg, GitLab and Direct URL.
-- No Windows support. All the paths are hardcoded for Unix systems. Windows support might be added soon
+- Automatic release detection is only supported for GitHub. Direct URL installation works for assets hosted on GitLab, sr.ht, and Codeberg, but automatic release resolution is not yet supported for those platforms
+- No Windows support. All the paths are hardcoded for Unix systems. Windows support might be added later

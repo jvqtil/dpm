@@ -10,21 +10,41 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-func downloadAsset(pkg *pkg) (string, error) {
-	destDir := filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
-
+func downloadAsset(pkg *pkg, destDir string) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create temp dir: %w", err)
 	}
 
 	dest := filepath.Join(destDir, pkg.AssetName)
 
-	if i, err := os.Stat(dest); err == nil {
+	// For packages with known size, check if cached file matches
+	if i, err := os.Stat(dest); err == nil && pkg.AssetSize != 0 {
 		if i.Size() == pkg.AssetSize {
 			fmt.Printf("=> Already downloaded: %s\n", dest)
 			return dest, nil
 		}
 		fmt.Println("=> Found incomplete download. Re-downloading...")
+	}
+
+	// For direct packages (AssetSize == 0), perform conditional request to validate cache
+	if pkg.AssetSize == 0 {
+		if i, err := os.Stat(dest); err == nil && i.Size() > 0 {
+			// Perform HEAD request to check if cached file is still valid
+			headResp, err := http.Head(pkg.AssetURL)
+			if err == nil {
+				defer headResp.Body.Close()
+				if headResp.StatusCode == http.StatusOK {
+					// Check if content length matches cached file
+					if headResp.ContentLength > 0 && headResp.ContentLength == i.Size() {
+						fmt.Printf("=> Already downloaded: %s\n", dest)
+						return dest, nil
+					}
+					// If ETag is available and file exists, could add conditional GET here
+					// For now, re-download if size doesn't match
+				}
+			}
+			fmt.Println("=> Found cached file, validating...")
+		}
 	}
 
 	resp, err := http.Get(pkg.AssetURL)

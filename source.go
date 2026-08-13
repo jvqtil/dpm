@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-func normalizeSource(input string) (string, error) {
-	s := strings.TrimSpace(input)
+func normalizeSource(source string) string {
+	s := strings.TrimSpace(source)
 	s = strings.TrimPrefix(s, "https://")
 	s = strings.TrimPrefix(s, "http://")
 	s = strings.TrimPrefix(s, "www.")
@@ -17,14 +17,16 @@ func normalizeSource(input string) (string, error) {
 
 	switch len(parts) {
 	case 2:
-		return fmt.Sprintf("%s/%s", cfg.AssumeSourceType, s), nil
-	case 3:
-		return s, nil
+		return fmt.Sprintf("%s/%s", cfg.AssumeSourceType, s)
 	default:
-		return "", fmt.Errorf("invalid source: %s", input)
+		return s
 	}
 }
 
-func sourceDomain(source string) string {
-	return strings.SplitN(source, "/", 2)[0]
+func getSourceDomain(source string) string {
+	s := strings.TrimSpace(source)
+	s = strings.TrimPrefix(s, "https://")
+	s = strings.TrimPrefix(s, "http://")
+
+	return strings.SplitN(s, "/", 2)[0]
 }
