@@ -89,7 +89,14 @@ func pickAsset(names []string, prompt string) (string, error) {
 }
 
 func resolveBinary(pkg *pkg) (string, error) {
-	src, err := downloadAsset(pkg)
+	var destDir string
+	switch pkg.SourceType {
+	case "github.com":
+		destDir = filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
+	default:
+		destDir = filepath.Join(cfg.CacheDir, sourceDomain(pkg.Source), pkg.Name, pkg.Version)
+	}
+	src, err := downloadAsset(pkg, destDir)
 	if err != nil {
 		return "", err
 	}

@@ -10,9 +10,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-func downloadAsset(pkg *pkg) (string, error) {
-	destDir := filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
-
+func downloadAsset(pkg *pkg, destDir string) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create temp dir: %w", err)
 	}

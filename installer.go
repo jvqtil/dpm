@@ -23,6 +23,15 @@ func install(input, explicitName string) error {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
+	e, exists := reg.Packages[explicitName]
+	if exists {
+		fmt.Printf("=> %s is already installed (%s)\n", green(e.PkgName), e.Version)
+		if !confirm("Reinstall?") {
+			fmt.Println("Aborted")
+			return nil
+		}
+	}
+
 	var pkg *pkg
 	var release *ghRelease
 	if isLocalPkg(source) {
@@ -36,26 +45,21 @@ func install(input, explicitName string) error {
 			return err
 		}
 
-		release, err = checkGithubTag(source, tag)
-		if err != nil {
-			return err
-		}
-	}
+		switch sourceDomain(source) {
+		case "github.com":
+			release, err = checkGithubTag(source, tag)
+			if err != nil {
+				return err
+			}
 
-	e, exists := reg.Packages[explicitName]
-	if exists {
-		fmt.Printf("=> %s is already installed (%s)\n", green(e.PkgName), e.Version)
-		if !confirm("Reinstall?") {
-			fmt.Println("Aborted")
-			return nil
+			pkg, err = resolveGithub(source, explicitName, release)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unsupported source: %s", source)
 		}
-	}
 
-	if !isLocalPkg(source) {
-		pkg, err = resolveGithub(source, explicitName, release)
-		if err != nil {
-			return err
-		}
 	}
 
 	dest := filepath.Join(cfg.BinDir, pkg.Name)
@@ -66,12 +70,10 @@ func install(input, explicitName string) error {
 	if pkg.SourceType == "local" {
 		assetNameFmt = pkg.AssetURL
 	}
-
 	suffix := ""
 	if isArchive(pkg.AssetName) {
 		suffix = " — " + cyan("archive")
 	}
-
 	fmt.Printf("↓ %s%s (%s)\n", assetNameFmt, suffix, humanize.Bytes(uint64(pkg.AssetSize)))
 	fmt.Printf("→ %s\n", dest)
 	fmt.Println(border)
