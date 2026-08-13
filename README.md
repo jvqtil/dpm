@@ -105,5 +105,5 @@ assume_source_type = "github.com"
 
 ## Known limitations
 
-- No support for GitLab, sr.ht, Codeberg yet. Will be added very soon
+- No support for automatic release detection on GitLab, sr.ht, Codeberg yet. Will be added very soon
 - No Windows support. All the paths are hardcoded for Unix systems. Windows support might be added later
