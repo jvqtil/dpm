@@ -7,7 +7,7 @@ import (
 
 func resolveDirect(source, name, tag string) (*pkg, error) {
 	assetURL := source
-	// Prepend https:// if the URL has no scheme
+
 	if !strings.HasPrefix(source, "http://") && !strings.HasPrefix(source, "https://") {
 		assetURL = "https://" + source
 	}
