@@ -1,13 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 	"text/tabwriter"
 )
 
-func list() error {
+func listAll() error {
 	reg, err := loadRegistry()
 	if err != nil {
 		return fmt.Errorf("failed to load registry: %w", err)
@@ -45,5 +46,24 @@ func listTarget(pkgName string) error {
 	}
 	fmt.Printf("Installed: %s\n", i.InstalledAt)
 
+	return nil
+}
+
+func listTargetJSON(pkgName string) error {
+	reg, err := loadRegistry()
+	if err != nil {
+		return fmt.Errorf("failed to load registry: %w", err)
+	}
+	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	if !ok {
+		return fmt.Errorf("package %s is not installed", pkgName)
+	}
+
+	data, err := json.MarshalIndent(pkg, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(data))
 	return nil
 }

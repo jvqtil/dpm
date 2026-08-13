@@ -60,7 +60,9 @@ func main() {
 			return
 		}
 		if len(args) < 1 {
-			err = list()
+			err = listAll()
+		} else if len(args) >= 2 && args[1] == "--json" {
+			err = listTargetJSON(resolvePkgName(args[0]))
 		} else {
 			err = listTarget(resolvePkgName(args[0]))
 		}
