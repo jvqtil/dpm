@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -18,12 +19,40 @@ func update(i registryItem, pkg *pkg) error {
 	}
 
 	dest := filepath.Join(cfg.BinDir, pkg.Name)
+
+	// Back up existing binary before updating
+	backupPath := dest + ".dpm-backup"
+	if _, err := os.Stat(dest); err == nil {
+		data, err := os.ReadFile(dest)
+		if err != nil {
+			return fmt.Errorf("failed to read existing binary for backup: %w", err)
+		}
+		if err := os.WriteFile(backupPath, data, 0755); err != nil {
+			return fmt.Errorf("failed to create backup: %w", err)
+		}
+		defer os.Remove(backupPath) // Clean up backup on success
+	}
+
 	if err := cpToDest(src, dest); err != nil {
+		// Restore backup if copy failed
+		if _, statErr := os.Stat(backupPath); statErr == nil {
+			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
+				return fmt.Errorf("copy failed and restoration failed: copy error: %w, restore error: %v", err, restoreErr)
+			}
+			return fmt.Errorf("copy failed, rolled back: %w", err)
+		}
 		return err
 	}
 
 	reg, err := loadRegistry()
 	if err != nil {
+		// Restore backup if loading registry failed
+		if _, statErr := os.Stat(backupPath); statErr == nil {
+			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
+				return fmt.Errorf("failed to load registry and restoration failed: load error: %w, restore error: %v", err, restoreErr)
+			}
+			return fmt.Errorf("failed to load registry, rolled back: %w", err)
+		}
 		rmBin(dest)
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
@@ -41,6 +70,13 @@ func update(i registryItem, pkg *pkg) error {
 	}
 
 	if err := saveRegistry(reg); err != nil {
+		// Restore backup if saving registry failed
+		if _, statErr := os.Stat(backupPath); statErr == nil {
+			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
+				return fmt.Errorf("failed to save registry and restoration failed: save error: %w, restore error: %v", err, restoreErr)
+			}
+			return fmt.Errorf("failed to save registry, rolled back: %w", err)
+		}
 		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
@@ -82,6 +118,8 @@ func updateTarget(pkgName string) error {
 		if err != nil {
 			return err
 		}
+	default:
+		return fmt.Errorf("unsupported source type '%s' for package %s", i.SourceType, pkgName)
 	}
 
 	return update(i, pkg)

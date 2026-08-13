@@ -105,5 +105,5 @@ assume_source_type = "github.com"
 
 ## Known limitations
 
-- No support for automatic release detection on GitLab, sr.ht, Codeberg yet. Will be added very soon
+- Automatic release detection is only supported for GitHub. Direct URL installation works for assets hosted on GitLab, sr.ht, and Codeberg, but automatic release resolution is not yet supported for those platforms
 - No Windows support. All the paths are hardcoded for Unix systems. Windows support might be added later
