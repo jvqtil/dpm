@@ -2,7 +2,14 @@
 
 A package manager that just works. Insanely fast
 
-**[Install](#install)** · **[Build](#build)** · **[Usage](#usage)** · **[Config](#config)**
+**[Features](#features)** • **[Install](#install)** • **[Build](#build)** • **[Usage](#usage)** • **[Config](#config)**
+
+## Features
+- Installing packages from
+  1. Github releases (binaries only)
+  2. Local binaries
+- Managing packages (Updating / Listing / Removing)
+- Chaning install path, cache directory, etc. See [Config](#config) for details
 
 > [!NOTE]
 > dpm is in early stage. Please report any bugs / problems via Github Issues. Contributions are welcome!
