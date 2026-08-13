@@ -119,7 +119,7 @@ func updateTarget(pkgName string) error {
 			return err
 		}
 	default:
-		return fmt.Errorf("unsupported source type '%s' for package %s", i.SourceType, pkgName)
+		return fmt.Errorf("unsupported source type %s", i.SourceType)
 	}
 
 	return update(i, pkg)
