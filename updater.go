@@ -8,12 +8,10 @@ import (
 )
 
 func update(i registryItem, pkg *pkg) error {
-	fmt.Printf("=> Updating package %s from %s to %s\n", green(pkg.Name), i.Version, pkg.Version)
-
 	src := pkg.Source
 	if pkg.SourceType != "local" {
 		var err error
-		src, err = downloadAsset(pkg)
+		src, err = resolveBinary(pkg)
 		if err != nil {
 			return err
 		}

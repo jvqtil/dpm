@@ -6,7 +6,7 @@ A package manager that just works. Insanely fast
 
 ## Features
 - Installing packages from
-  - Github releases (binaries only)
+  - Github releases
   - Local binaries
 - Managing packages (Updating / Listing / Removing)
 - Chaning install path, cache directory, etc. See [Config](#config) for details
@@ -99,6 +99,5 @@ assume_source_type = "github.com"
 
 ## Known limitations
 
-- No archive support yet - assets need to be a bare binary for now. This is the #1 priority
 - Only GitHub releases and local files are supported for now. Very soon we'll have support for Codeberg, GitLab and Direct URL.
 - No Windows support. All the paths are hardcoded for Unix systems. Windows support might be added soon

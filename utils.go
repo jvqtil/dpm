@@ -15,6 +15,8 @@ import (
 var (
 	green = color.New(color.FgGreen).SprintFunc()
 	red   = color.New(color.FgRed).SprintFunc()
+	cyan  = color.New(color.FgCyan).SprintFunc()
+	bold  = color.New(color.Bold).SprintFunc()
 )
 
 func resolveTag(input string) (source, tag string) {
@@ -36,9 +38,6 @@ func resolvePkgName(input string) string {
 
 func getTagVerb(tag string) string {
 	var tagVerb string
-	if tag == "local" {
-		return ""
-	}
 	if tag != "" {
 		tagVerb = "@" + tag
 	}

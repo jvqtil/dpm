@@ -59,11 +59,23 @@ func install(input, explicitName string) error {
 	}
 
 	dest := filepath.Join(cfg.BinDir, pkg.Name)
-	fmt.Printf("\nPackage: %s%s (%s)\n", green(pkg.Name), getTagVerb(pkg.Version), pkg.SourceType)
-	if pkg.SourceType != "local" {
-		fmt.Printf("Asset: %s (%s)\n", pkg.AssetName, humanize.Bytes(uint64(pkg.AssetSize)))
+	border := strings.Repeat("═", 40)
+	fmt.Println(border)
+	fmt.Printf("%s%s (%s)\n\n", green(pkg.Name), getTagVerb(pkg.Version), pkg.SourceType)
+	assetNameFmt := pkg.AssetName
+	if pkg.SourceType == "local" {
+		assetNameFmt = pkg.AssetURL
 	}
-	fmt.Printf("Installing to %s\n\n", dest)
+
+	suffix := ""
+	if isArchive(pkg.AssetName) {
+		suffix = " — " + cyan("archive")
+	}
+
+	fmt.Printf("↓ %s%s (%s)\n", assetNameFmt, suffix, humanize.Bytes(uint64(pkg.AssetSize)))
+	fmt.Printf("→ %s\n", dest)
+	fmt.Println(border)
+
 	if !exists && !confirm("Install this package?") {
 		fmt.Println("Aborted")
 		return nil
@@ -71,9 +83,14 @@ func install(input, explicitName string) error {
 
 	src := pkg.Source
 	if pkg.SourceType != "local" {
-		src, err = downloadAsset(pkg)
+		src, err = resolveBinary(pkg)
 		if err != nil {
 			return err
+		}
+		if isArchive(pkg.AssetName) {
+			if info, err := os.Stat(src); err == nil {
+				fmt.Printf("%s %s (%s)\n", bold("Extracted:"), filepath.Base(src), humanize.Bytes(uint64(info.Size())))
+			}
 		}
 	}
 

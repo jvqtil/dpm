@@ -21,10 +21,10 @@ func downloadAsset(pkg *pkg) (string, error) {
 
 	if i, err := os.Stat(dest); err == nil {
 		if i.Size() == pkg.AssetSize {
-			fmt.Printf("Already downloaded: %s\n", dest)
+			fmt.Printf("=> Already downloaded: %s\n", dest)
 			return dest, nil
 		}
-		fmt.Println("Found incomplete download. Re-downloading...")
+		fmt.Println("=> Found incomplete download. Re-downloading...")
 	}
 
 	resp, err := http.Get(pkg.AssetURL)
