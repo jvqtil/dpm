@@ -65,7 +65,7 @@ func fetchGhRelease(source, tag string) (*ghRelease, error) {
 
 func isGithubSource(source string) bool {
 	parts := strings.Split(strings.Trim(source, "/"), "/")
-	return len(parts) == 3 && parts[0] == "github.com"
+	return len(parts) == 3 && strings.EqualFold(parts[0], "github.com")
 }
 
 func checkGithubTag(source, tag string) (*ghRelease, error) {

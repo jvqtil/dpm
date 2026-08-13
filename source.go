@@ -9,6 +9,7 @@ func normalizeSource(source string) string {
 	s := strings.TrimSpace(source)
 	s = strings.TrimPrefix(s, "https://")
 	s = strings.TrimPrefix(s, "http://")
+	s = strings.TrimPrefix(s, "www.")
 	s = strings.TrimSuffix(s, "/")
 	s = strings.TrimSuffix(s, ".git")
 
