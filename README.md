@@ -81,8 +81,9 @@ dpm r gh-cli
 ### List
 
 ```sh
-dpm l            # everything installed
-dpm l gh-cli     # source, binary path, install date, etc.
+dpm l                 # everything installed
+dpm l gh-cli          # source, binary path, install date, etc.
+dpm l gh-cli --json   # same but in JSON
 ```
 
 ## Config
