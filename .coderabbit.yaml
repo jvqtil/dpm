@@ -1,0 +1,6 @@
+reviews:
+  auto_assign_reviewers: true
+  in_progress_fortune: false
+
+chat:
+  art: false
