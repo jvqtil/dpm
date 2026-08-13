@@ -9,7 +9,9 @@ A package manager that just works. Insanely fast
   - GitHub releases
   - Local binaries
 - Managing packages (Updating / Listing / Removing)
+- Automatching binary from GitHub releases / unpacked archives based on OS and Architecture
 - Changing install path, cache directory, etc. See [config section](#config) for details
+- Automatically assumes source if not provided (`jvqtil/dpm` -> `github.com/jvqtil/dpm`). See [config section](#config) for details
 
 > [!NOTE]
 > dpm is in early stage. Please report any bugs / problems via GitHub Issues. Contributions are welcome!
