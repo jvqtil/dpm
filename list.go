@@ -37,7 +37,7 @@ func listTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	fmt.Printf("=> %s@%s\n", green(i.PkgName), i.Version)
+	fmt.Printf("%s%s\n", green(i.PkgName), getTagVerb(i.Version))
 	fmt.Printf("Source: %s\n\n", i.Source)
 	fmt.Printf("Binary: %s\n", i.Binary)
 	if i.LastUpdated != i.InstalledAt {

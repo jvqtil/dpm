@@ -19,12 +19,9 @@ func resolveLocal(source, tag, name string) (*pkg, error) {
 
 	source, _ = filepath.Abs(source)
 
-	if _, err := os.Stat(source); err != nil {
+	file, err := os.Stat(source)
+	if err != nil {
 		return nil, fmt.Errorf("file not found: %w", err)
-	}
-
-	if tag == "" {
-		tag = "local"
 	}
 
 	return &pkg{
@@ -34,5 +31,6 @@ func resolveLocal(source, tag, name string) (*pkg, error) {
 		Source:     source,
 		AssetName:  filepath.Base(source),
 		AssetURL:   source,
+		AssetSize:  file.Size(),
 	}, nil
 }

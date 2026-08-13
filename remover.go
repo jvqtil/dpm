@@ -16,7 +16,11 @@ func remove(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	if !confirm(fmt.Sprintf("Remove %s (%s)?", green(pkgName), i.Version)) {
+	var tagVerb string
+	if i.Version != "" {
+		tagVerb = "(" + i.Version + ")"
+	}
+	if !confirm(fmt.Sprintf("Remove %s %s?", green(pkgName), tagVerb)) {
 		fmt.Println("Aborted")
 		return nil
 	}
