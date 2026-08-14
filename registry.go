@@ -7,20 +7,27 @@ import (
 	"path/filepath"
 )
 
-type registryItem struct {
-	PkgName     string `json:"pkg_name"`
-	Version     string `json:"version"`
+type pkg struct {
+	Name        string `json:"pkg_name"`
+	CurrentTag  tag    `json:"current_tag"`
+	Tags        []tag  `json:"tags"`
 	SourceType  string `json:"source_type"`
 	Source      string `json:"source"`
-	AssetName   string `json:"asset_name"`
-	AssetURL    string `json:"asset_url"`
-	Binary      string `json:"binary"`
+	BinaryPath  string `json:"binary_path"`
 	InstalledAt string `json:"installed_at"`
 	LastUpdated string `json:"last_updated"`
 }
 
+type tag struct {
+	TagName   string `json:"tag_name"`
+	AssetName string `json:"asset_name"`
+	AssetURL  string `json:"asset_url"`
+	AssetPath string `json:"asset_path"`
+	AssetSize int64  `json:"asset_size"`
+}
+
 type registry struct {
-	Packages map[string]registryItem `json:"packages"`
+	Packages map[string]pkg `json:"packages"`
 }
 
 func getRegPath() string {
@@ -32,7 +39,7 @@ func loadRegistry() (*registry, error) {
 	data, err := os.ReadFile(getRegPath())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &registry{Packages: map[string]registryItem{}}, nil
+			return &registry{Packages: map[string]pkg{}}, nil
 		}
 		return nil, fmt.Errorf("failed to read registry: %w", err)
 	}
@@ -43,7 +50,7 @@ func loadRegistry() (*registry, error) {
 	}
 
 	if reg.Packages == nil {
-		reg.Packages = map[string]registryItem{}
+		reg.Packages = map[string]pkg{}
 	}
 
 	return &reg, nil

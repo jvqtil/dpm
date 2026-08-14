@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -78,6 +79,10 @@ func checkGithubTag(source, tag string) (*ghRelease, error) {
 }
 
 func resolveGithub(source, name string, release *ghRelease) (*pkg, error) {
+	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
+		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
+	}
+
 	asset := matchGhAsset(release.Assets)
 	if asset == nil {
 		var err error
@@ -89,12 +94,16 @@ func resolveGithub(source, name string, release *ghRelease) (*pkg, error) {
 
 	return &pkg{
 		Name:       name,
-		Version:    release.TagName,
 		SourceType: getSourceDomain(source),
 		Source:     source,
-		AssetName:  asset.Name,
-		AssetURL:   asset.URL,
-		AssetSize:  asset.Size,
+		BinaryPath: filepath.Join(cfg.BinDir, name),
+		CurrentTag: tag{
+			TagName:   release.TagName,
+			AssetName: asset.Name,
+			AssetURL:  asset.URL,
+			AssetSize: asset.Size,
+		},
+		Tags: []tag{},
 	}, nil
 }
 

@@ -20,8 +20,8 @@ func listAll() error {
 
 	fmt.Printf("=> Installed packages (%d)\n", len(reg.Packages))
 	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
-	for _, i := range reg.Packages {
-		fmt.Fprintf(w, "%s\t%s\n", i.PkgName, i.Version)
+	for _, p := range reg.Packages {
+		fmt.Fprintf(w, "%s\t%s\n", p.Name, p.CurrentTag.TagName)
 	}
 	w.Flush()
 
@@ -33,18 +33,18 @@ func listTarget(pkgName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
-	i, ok := reg.Packages[strings.ToLower(pkgName)]
+	p, ok := reg.Packages[strings.ToLower(pkgName)]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	fmt.Printf("%s%s\n", green(i.PkgName), getTagVerb(i.Version))
-	fmt.Printf("Source: %s\n\n", i.Source)
-	fmt.Printf("Binary: %s\n", i.Binary)
-	if i.LastUpdated != i.InstalledAt {
-		fmt.Printf("Last Updated: %s\n", i.LastUpdated)
+	fmt.Printf("%s%s\n", green(p.Name), getTagVerb(p.CurrentTag.TagName))
+	fmt.Printf("Source: %s\n\n", p.Source)
+	fmt.Printf("Binary: %s\n", p.BinaryPath)
+	if p.LastUpdated != p.InstalledAt {
+		fmt.Printf("Last Updated: %s\n", p.LastUpdated)
 	}
-	fmt.Printf("Installed: %s\n", i.InstalledAt)
+	fmt.Printf("Installed: %s\n", p.InstalledAt)
 
 	return nil
 }

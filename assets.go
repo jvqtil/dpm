@@ -10,20 +10,26 @@ import (
 	"strings"
 )
 
-func resolveBinary(pkg *pkg) (string, error) {
+func resolveAsset(pkg *pkg) (string, error) {
 	var destDir string
 	switch pkg.SourceType {
 	case "github.com":
-		destDir = filepath.Join(cfg.CacheDir, pkg.Source, pkg.Version)
+		destDir = filepath.Join(cfg.CacheDir, pkg.Source, pkg.CurrentTag.TagName)
 	default:
-		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, pkg.Version)
+		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, pkg.CurrentTag.TagName)
 	}
-	src, err := downloadAsset(pkg, destDir)
+	src, err := downloadAsset(&pkg.CurrentTag, destDir)
 	if err != nil {
 		return "", err
 	}
 
-	if !isArchive(pkg.AssetName) {
+	if pkg.CurrentTag.AssetSize == 0 {
+		if info, err := os.Stat(src); err == nil {
+			pkg.CurrentTag.AssetSize = info.Size()
+		}
+	}
+
+	if !isArchive(pkg.CurrentTag.AssetName) {
 		return src, nil
 	}
 
@@ -67,6 +73,7 @@ func resolveBinary(pkg *pkg) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return nameToPath[picked], nil
 }
 
