@@ -10,26 +10,26 @@ import (
 	"strings"
 )
 
-func resolveAsset(pkg *Package) (string, error) {
+func resolveAsset(pkg Package, tag *Tag) (string, error) {
 	var destDir string
 	switch pkg.SourceType {
 	case "github.com":
-		destDir = filepath.Join(cfg.CacheDir, pkg.Source, pkg.CurrentTag.TagName)
+		destDir = filepath.Join(cfg.CacheDir, pkg.Source, tag.TagName)
 	default:
-		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, pkg.CurrentTag.TagName)
+		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, tag.TagName)
 	}
-	src, err := downloadAsset(&pkg.CurrentTag, destDir)
+	src, err := downloadAsset(tag, destDir)
 	if err != nil {
 		return "", err
 	}
 
-	if pkg.CurrentTag.AssetSize == 0 {
+	if tag.AssetSize == 0 {
 		if info, err := os.Stat(src); err == nil {
-			pkg.CurrentTag.AssetSize = info.Size()
+			tag.AssetSize = info.Size()
 		}
 	}
 
-	if !isArchive(pkg.CurrentTag.AssetName) {
+	if !isArchive(tag.AssetName) {
 		return src, nil
 	}
 

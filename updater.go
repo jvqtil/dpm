@@ -9,22 +9,11 @@ import (
 )
 
 func updatePkg(pkg Package, newTag Tag) error {
-	var src string
-	tmp := &Package{
-		Name:       pkg.Name,
-		SourceType: pkg.SourceType,
-		Source:     pkg.Source,
-		CurrentTag: newTag,
-	}
-	var err error
-	src, err = resolveAsset(tmp)
+	src, err := resolveAsset(pkg, &newTag)
 	if err != nil {
 		return err
 	}
-	if tmp.CurrentTag.AssetPath != "" {
-		newTag.AssetPath = tmp.CurrentTag.AssetPath
-		newTag.AssetSize = tmp.CurrentTag.AssetSize
-	} else {
+	if newTag.AssetPath == "" {
 		newTag.AssetPath = src
 	}
 

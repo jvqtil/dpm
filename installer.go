@@ -89,7 +89,7 @@ func installPkg(input, explicitName string) error {
 	if pkg.SourceType == "local" {
 		src = pkg.CurrentTag.AssetPath
 	} else {
-		src, err = resolveAsset(pkg)
+		src, err = resolveAsset(*pkg, &pkg.CurrentTag)
 		if err != nil {
 			return err
 		}
