@@ -16,6 +16,9 @@ func installPkg(input, explicitName string) error {
 	if explicitName == "" {
 		explicitName = resolvePkgName(source)
 	}
+	if strings.Contains(explicitName, "/") || strings.Contains(explicitName, "\\") || strings.HasPrefix(explicitName, "..") {
+		return fmt.Errorf("invalid package name: %s contains path separators or traversal components", explicitName)
+	}
 	explicitName = strings.ToLower(explicitName)
 
 	reg, err := loadRegistry()
@@ -103,24 +106,46 @@ func installPkg(input, explicitName string) error {
 		}
 	}
 
+	// Back up existing binary for reinstalls
+	var backupPath string
+	if exists {
+		backupPath = pkg.BinaryPath + ".bak"
+		if data, err := os.ReadFile(pkg.BinaryPath); err == nil {
+			os.WriteFile(backupPath, data, 0755)
+		}
+	}
+
 	if err := cpToDest(src, pkg.BinaryPath); err != nil {
 		return err
 	}
 
 	if exists {
-		found := -1
-		for i, t := range existingPkg.Tags {
-			if t.TagName == pkg.CurrentTag.TagName {
-				found = i
-				break
-			}
-		}
-		if found != -1 {
-			existingPkg.Tags[found].AssetURL = pkg.CurrentTag.AssetURL
-			existingPkg.Tags[found].AssetPath = pkg.CurrentTag.AssetPath
-			existingPkg.Tags[found].AssetSize = pkg.CurrentTag.AssetSize
+		// Copy package-level metadata
+		existingPkg.SourceType = pkg.SourceType
+		existingPkg.Source = pkg.Source
+		existingPkg.BinaryPath = pkg.BinaryPath
+
+		// Check if source changed
+		sourceChanged := existingPkg.Source != pkg.Source
+
+		if sourceChanged {
+			// Reset tags to contain only the current tag when source changes
+			existingPkg.Tags = []tag{pkg.CurrentTag}
 		} else {
-			existingPkg.Tags = append(existingPkg.Tags, pkg.CurrentTag)
+			// Replace matching tag entry or append new tag
+			found := -1
+			for i, t := range existingPkg.Tags {
+				if t.TagName == pkg.CurrentTag.TagName {
+					found = i
+					break
+				}
+			}
+			if found != -1 {
+				// Replace the complete tag record to refresh all fields including AssetName
+				existingPkg.Tags[found] = pkg.CurrentTag
+			} else {
+				existingPkg.Tags = append(existingPkg.Tags, pkg.CurrentTag)
+			}
 		}
 		existingPkg.CurrentTag = pkg.CurrentTag
 		existingPkg.LastUpdated = time.Now().Format("02 Jan 06 15:04")
@@ -133,8 +158,23 @@ func installPkg(input, explicitName string) error {
 	}
 
 	if err := saveRegistry(reg); err != nil {
-		rmBin(pkg.BinaryPath)
+		if exists {
+			// Restore previously backed-up binary for reinstalls
+			if backupPath != "" {
+				if data, readErr := os.ReadFile(backupPath); readErr == nil {
+					os.WriteFile(pkg.BinaryPath, data, 0755)
+				}
+			}
+		} else {
+			// Remove binary only for first install
+			rmBin(pkg.BinaryPath)
+		}
 		return fmt.Errorf("failed to save registry, rolled back: %w", err)
+	}
+
+	// Clean up backup if registry save succeeded
+	if exists && backupPath != "" {
+		os.Remove(backupPath)
 	}
 
 	fmt.Printf("=> Installed package %s%s\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.TagName))

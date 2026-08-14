@@ -23,6 +23,13 @@ func resolveAsset(pkg *pkg) (string, error) {
 		return "", err
 	}
 
+	// Capture asset size for successfully downloaded archives in default cache branch
+	if pkg.SourceType != "github.com" && pkg.CurrentTag.AssetSize == 0 {
+		if info, err := os.Stat(src); err == nil {
+			pkg.CurrentTag.AssetSize = info.Size()
+		}
+	}
+
 	if !isArchive(pkg.CurrentTag.AssetName) {
 		return src, nil
 	}

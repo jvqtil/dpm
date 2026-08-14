@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -25,6 +26,12 @@ func removePkg(pkgName string) error {
 		return nil
 	}
 
+	// Back up the binary before removal
+	var backupData []byte
+	if data, err := os.ReadFile(p.BinaryPath); err == nil {
+		backupData = data
+	}
+
 	if err := rmBin(p.BinaryPath); err != nil {
 		return fmt.Errorf("failed to remove binary: %w", err)
 	}
@@ -32,6 +39,10 @@ func removePkg(pkgName string) error {
 	delete(reg.Packages, strings.ToLower(pkgName))
 
 	if err := saveRegistry(reg); err != nil {
+		// Restore the binary if registry save fails
+		if backupData != nil {
+			os.WriteFile(p.BinaryPath, backupData, 0755)
+		}
 		return fmt.Errorf("failed to update registry: %w", err)
 	}
 
