@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 )
 
-type pkg struct {
+type Package struct {
 	Name        string `json:"pkg_name"`
-	CurrentTag  tag    `json:"current_tag"`
-	Tags        []tag  `json:"tags"`
+	CurrentTag  Tag    `json:"current_tag"`
+	Tags        []Tag  `json:"tags"`
 	SourceType  string `json:"source_type"`
 	Source      string `json:"source"`
 	BinaryPath  string `json:"binary_path"`
@@ -18,7 +18,7 @@ type pkg struct {
 	LastUpdated string `json:"last_updated"`
 }
 
-type tag struct {
+type Tag struct {
 	TagName   string `json:"tag_name"`
 	AssetName string `json:"asset_name"`
 	AssetURL  string `json:"asset_url"`
@@ -26,8 +26,8 @@ type tag struct {
 	AssetSize int64  `json:"asset_size"`
 }
 
-type registry struct {
-	Packages map[string]pkg `json:"packages"`
+type Registry struct {
+	Packages map[string]Package `json:"packages"`
 }
 
 func getRegPath() string {
@@ -35,28 +35,28 @@ func getRegPath() string {
 	return filepath.Join(home, ".local", "state", "dpm", "registry.json")
 }
 
-func loadRegistry() (*registry, error) {
+func loadRegistry() (*Registry, error) {
 	data, err := os.ReadFile(getRegPath())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &registry{Packages: map[string]pkg{}}, nil
+			return &Registry{Packages: map[string]Package{}}, nil
 		}
 		return nil, fmt.Errorf("failed to read registry: %w", err)
 	}
 
-	var reg registry
+	var reg Registry
 	if err := json.Unmarshal(data, &reg); err != nil {
 		return nil, fmt.Errorf("failed to parse registry file: %w", err)
 	}
 
 	if reg.Packages == nil {
-		reg.Packages = map[string]pkg{}
+		reg.Packages = map[string]Package{}
 	}
 
 	return &reg, nil
 }
 
-func saveRegistry(reg *registry) error {
+func saveRegistry(reg *Registry) error {
 	path := getRegPath()
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {

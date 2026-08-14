@@ -11,7 +11,7 @@ func isLocalPkg(input string) bool {
 	return strings.HasPrefix(input, "./") || strings.HasPrefix(input, "/") || strings.HasPrefix(input, "~/")
 }
 
-func resolveLocal(source, tag_, name string) (*pkg, error) {
+func resolveLocal(source, tag, name string) (*Package, error) {
 	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
 		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
 	}
@@ -28,17 +28,17 @@ func resolveLocal(source, tag_, name string) (*pkg, error) {
 		return nil, fmt.Errorf("file not found: %w", err)
 	}
 
-	return &pkg{
+	return &Package{
 		Name:       name,
 		SourceType: "local",
 		Source:     source,
 		BinaryPath: filepath.Join(cfg.BinDir, name),
-		CurrentTag: tag{
-			TagName:   tag_,
+		CurrentTag: Tag{
+			TagName:   tag,
 			AssetName: filepath.Base(source),
 			AssetPath: source,
 			AssetSize: file.Size(),
 		},
-		Tags: []tag{},
+		Tags: []Tag{},
 	}, nil
 }
