@@ -24,9 +24,6 @@ func resolveAsset(pkg *pkg) (string, error) {
 	}
 
 	if !isArchive(pkg.CurrentTag.AssetName) {
-		if info, err := os.Stat(src); err == nil {
-			pkg.CurrentTag.AssetSize = info.Size()
-		}
 		return src, nil
 	}
 
@@ -69,10 +66,6 @@ func resolveAsset(pkg *pkg) (string, error) {
 	picked, err := pickAsset(names, fmt.Sprintf("Found %d files in archive - host: %s/%s", len(names), runtime.GOOS, runtime.GOARCH))
 	if err != nil {
 		return "", err
-	}
-
-	if info, err := os.Stat(src); err == nil {
-		pkg.CurrentTag.AssetSize = info.Size()
 	}
 
 	return nameToPath[picked], nil
