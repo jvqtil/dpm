@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func resolveAsset(pkg *pkg) (string, error) {
+func resolveAsset(pkg *Package) (string, error) {
 	var destDir string
 	switch pkg.SourceType {
 	case "github.com":

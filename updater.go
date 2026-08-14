@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-func updatePkg(existingPkg pkg, newTag tag) error {
+func updatePkg(pkg Package, newTag Tag) error {
 	var src string
-	tmp := &pkg{
-		Name:       existingPkg.Name,
-		SourceType: existingPkg.SourceType,
-		Source:     existingPkg.Source,
+	tmp := &Package{
+		Name:       pkg.Name,
+		SourceType: pkg.SourceType,
+		Source:     pkg.Source,
 		CurrentTag: newTag,
 	}
 	var err error
@@ -28,7 +28,7 @@ func updatePkg(existingPkg pkg, newTag tag) error {
 		newTag.AssetPath = src
 	}
 
-	dest := existingPkg.BinaryPath
+	dest := pkg.BinaryPath
 
 	backupPath := filepath.Join(os.TempDir(), "dpm-backup-"+filepath.Base(dest))
 	if _, err := os.Stat(dest); err == nil {
@@ -64,24 +64,13 @@ func updatePkg(existingPkg pkg, newTag tag) error {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
-	updatedPkg := existingPkg
-	updatedPkg.CurrentTag = newTag
-	updatedPkg.LastUpdated = time.Now().Format(time.RFC3339)
-
-	found := -1
-	for i, t := range updatedPkg.Tags {
-		if t.TagName == newTag.TagName {
-			found = i
-			break
-		}
+	oldTag := pkg.CurrentTag.TagName
+	pkg.AddTag(newTag)
+	if err := pkg.SetCurrentTag(newTag); err != nil {
+		return err
 	}
-	if found != -1 {
-		updatedPkg.Tags[found] = newTag
-	} else {
-		updatedPkg.Tags = append(updatedPkg.Tags, newTag)
-	}
-
-	reg.Packages[updatedPkg.Name] = updatedPkg
+	pkg.LastUpdated = time.Now().Format(time.RFC3339)
+	reg.Packages[pkg.Name] = pkg
 
 	if err := saveRegistry(reg); err != nil {
 		if _, statErr := os.Stat(backupPath); statErr == nil {
@@ -93,7 +82,7 @@ func updatePkg(existingPkg pkg, newTag tag) error {
 		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
-	fmt.Printf("=> Updated package %s from %s to %s\n", green(existingPkg.Name), existingPkg.CurrentTag.TagName, newTag.TagName)
+	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), oldTag, newTag.TagName)
 	return nil
 }
 
@@ -108,7 +97,7 @@ func updateTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	var newPkg *pkg
+	var newPkg *Package
 	switch existingPkg.SourceType {
 	case "local":
 		fmt.Printf("=> %s is a local package. Local packages can't be updated. Please reinstall it manually\n", green(pkgName))
@@ -150,7 +139,7 @@ func updateAll() error {
 	}
 
 	type pending struct {
-		item    pkg
+		item    Package
 		release *ghRelease
 	}
 

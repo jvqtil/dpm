@@ -11,7 +11,7 @@ import (
 )
 
 func installPkg(input, explicitName string) error {
-	source, tag_ := resolveTag(input)
+	source, tag := resolveTag(input)
 
 	if explicitName == "" {
 		explicitName = resolvePkgName(source)
@@ -23,29 +23,29 @@ func installPkg(input, explicitName string) error {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
-	existingPkg, exists := reg.Packages[explicitName]
+	ePkg, exists := reg.Packages[explicitName]
 	if exists {
 		var tagVerb string
-		if existingPkg.CurrentTag.TagName != "" {
-			tagVerb = "(" + existingPkg.CurrentTag.TagName + ")"
+		if ePkg.CurrentTag.TagName != "" {
+			tagVerb = "(" + ePkg.CurrentTag.TagName + ")"
 		}
-		fmt.Printf("=> %s is already installed %s\n", green(existingPkg.Name), tagVerb)
+		fmt.Printf("=> %s is already installed %s\n", green(ePkg.Name), tagVerb)
 		if !confirm("Reinstall?") {
 			fmt.Println("Aborted")
 			return nil
 		}
 	}
 
-	var pkg *pkg
+	var pkg *Package
 	if isLocalPkg(source) {
-		pkg, err = resolveLocal(source, tag_, explicitName)
+		pkg, err = resolveLocal(source, tag, explicitName)
 		if err != nil {
 			return fmt.Errorf("failed to resolve: %w", err)
 		}
 	} else {
 		if isGithubSource(normalizeSource(source)) {
 			source = normalizeSource(source)
-			release, err := checkGithubTag(source, tag_)
+			release, err := checkGithubTag(source, tag)
 			if err != nil {
 				return err
 			}
@@ -54,7 +54,7 @@ func installPkg(input, explicitName string) error {
 				return err
 			}
 		} else {
-			pkg, err = resolveDirect(source, explicitName, tag_)
+			pkg, err = resolveDirect(source, explicitName, tag)
 			if err != nil {
 				return err
 			}
@@ -108,30 +108,19 @@ func installPkg(input, explicitName string) error {
 	}
 
 	if exists {
-		found := -1
-		for i, t := range existingPkg.Tags {
-			if t.TagName == pkg.CurrentTag.TagName {
-				found = i
-				break
-			}
+		ePkg.AddTag(pkg.CurrentTag)
+		if err := ePkg.SetCurrentTag(pkg.CurrentTag); err != nil {
+			return err
 		}
-		if found != -1 {
-			existingPkg.Tags[found].AssetURL = pkg.CurrentTag.AssetURL
-			existingPkg.Tags[found].AssetPath = pkg.CurrentTag.AssetPath
-			existingPkg.Tags[found].AssetSize = pkg.CurrentTag.AssetSize
-		} else {
-			existingPkg.Tags = append(existingPkg.Tags, pkg.CurrentTag)
-		}
-		existingPkg.CurrentTag = pkg.CurrentTag
-		existingPkg.SourceType = pkg.SourceType
-		existingPkg.Source = pkg.Source
-		existingPkg.BinaryPath = pkg.BinaryPath
-		existingPkg.LastUpdated = time.Now().Format(time.RFC3339)
-		reg.Packages[explicitName] = existingPkg
+		ePkg.SourceType = pkg.SourceType
+		ePkg.Source = pkg.Source
+		ePkg.BinaryPath = pkg.BinaryPath
+		ePkg.LastUpdated = time.Now().Format(time.RFC3339)
+		reg.Packages[explicitName] = ePkg
 	} else {
 		pkg.InstalledAt = time.Now().Format(time.RFC3339)
 		pkg.LastUpdated = pkg.InstalledAt
-		pkg.Tags = []tag{pkg.CurrentTag}
+		pkg.Tags = []Tag{pkg.CurrentTag}
 		reg.Packages[explicitName] = *pkg
 	}
 
