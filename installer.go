@@ -123,6 +123,9 @@ func installPkg(input, explicitName string) error {
 			existingPkg.Tags = append(existingPkg.Tags, pkg.CurrentTag)
 		}
 		existingPkg.CurrentTag = pkg.CurrentTag
+		existingPkg.SourceType = pkg.SourceType
+		existingPkg.Source = pkg.Source
+		existingPkg.BinaryPath = pkg.BinaryPath
 		existingPkg.LastUpdated = time.Now().Format(time.RFC3339)
 		reg.Packages[explicitName] = existingPkg
 	} else {
