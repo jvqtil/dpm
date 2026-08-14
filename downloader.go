@@ -10,16 +10,16 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-func downloadAsset(pkg *pkg, destDir string) (string, error) {
+func downloadAsset(tag *tag, destDir string) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create temp dir: %w", err)
 	}
 
-	dest := filepath.Join(destDir, pkg.AssetName)
+	dest := filepath.Join(destDir, tag.AssetName)
 
 	// For packages with known size, check if cached file matches
-	if i, err := os.Stat(dest); err == nil && pkg.AssetSize != 0 {
-		if i.Size() == pkg.AssetSize {
+	if i, err := os.Stat(dest); err == nil && tag.AssetSize != 0 {
+		if i.Size() == tag.AssetSize {
 			fmt.Printf("=> Already downloaded: %s\n", dest)
 			return dest, nil
 		}
@@ -27,10 +27,10 @@ func downloadAsset(pkg *pkg, destDir string) (string, error) {
 	}
 
 	// For direct packages (AssetSize == 0), perform conditional request to validate cache
-	if pkg.AssetSize == 0 {
+	if tag.AssetSize == 0 {
 		if i, err := os.Stat(dest); err == nil && i.Size() > 0 {
 			// Perform HEAD request to check if cached file is still valid
-			headResp, err := http.Head(pkg.AssetURL)
+			headResp, err := http.Head(tag.AssetURL)
 			if err == nil {
 				defer headResp.Body.Close()
 				if headResp.StatusCode == http.StatusOK {
@@ -47,7 +47,7 @@ func downloadAsset(pkg *pkg, destDir string) (string, error) {
 		}
 	}
 
-	resp, err := http.Get(pkg.AssetURL)
+	resp, err := http.Get(tag.AssetURL)
 	if err != nil {
 		return "", fmt.Errorf("download request failed: %w", err)
 	}
@@ -63,7 +63,7 @@ func downloadAsset(pkg *pkg, destDir string) (string, error) {
 	}
 	defer out.Close()
 
-	lengh := pkg.AssetSize
+	lengh := tag.AssetSize
 	if lengh == 0 {
 		lengh = resp.ContentLength
 	}

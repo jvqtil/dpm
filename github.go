@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -89,12 +90,16 @@ func resolveGithub(source, name string, release *ghRelease) (*pkg, error) {
 
 	return &pkg{
 		Name:       name,
-		Version:    release.TagName,
 		SourceType: getSourceDomain(source),
 		Source:     source,
-		AssetName:  asset.Name,
-		AssetURL:   asset.URL,
-		AssetSize:  asset.Size,
+		BinaryPath: filepath.Join(cfg.BinDir, name),
+		CurrentTag: tag{
+			TagName:   release.TagName,
+			AssetName: asset.Name,
+			AssetURL:  asset.URL,
+			AssetSize: asset.Size,
+		},
+		Tags: []tag{},
 	}, nil
 }
 

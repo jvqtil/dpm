@@ -5,27 +5,27 @@ import (
 	"strings"
 )
 
-func remove(pkgName string) error {
+func removePkg(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
-	i, ok := reg.Packages[strings.ToLower(pkgName)]
+	p, ok := reg.Packages[strings.ToLower(pkgName)]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
 	var tagVerb string
-	if i.Version != "" {
-		tagVerb = "(" + i.Version + ")"
+	if p.CurrentTag.TagName != "" {
+		tagVerb = "(" + p.CurrentTag.TagName + ")"
 	}
 	if !confirm(fmt.Sprintf("Remove %s %s?", green(pkgName), tagVerb)) {
 		fmt.Println("Aborted")
 		return nil
 	}
 
-	if err := rmBin(i.Binary); err != nil {
+	if err := rmBin(p.BinaryPath); err != nil {
 		return fmt.Errorf("failed to remove binary: %w", err)
 	}
 

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func resolveDirect(source, name, tag string) (*pkg, error) {
+func resolveDirect(source, name, tag_ string) (*pkg, error) {
 	assetURL := source
 
 	if !strings.HasPrefix(source, "http://") && !strings.HasPrefix(source, "https://") {
@@ -14,10 +14,14 @@ func resolveDirect(source, name, tag string) (*pkg, error) {
 
 	return &pkg{
 		Name:       name,
-		Version:    tag,
 		SourceType: "direct",
 		Source:     normalizeSource(source),
-		AssetName:  filepath.Base(source),
-		AssetURL:   assetURL,
+		BinaryPath: filepath.Join(cfg.BinDir, name),
+		CurrentTag: tag{
+			TagName:   tag_,
+			AssetName: filepath.Base(source),
+			AssetURL:  assetURL,
+		},
+		Tags: []tag{},
 	}, nil
 }

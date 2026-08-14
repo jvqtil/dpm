@@ -37,7 +37,7 @@ func main() {
 		if len(args) > 1 {
 			pkgName = args[1]
 		}
-		err = install(args[0], pkgName)
+		err = installPkg(args[0], pkgName)
 	case "u":
 		if needsHelp(args) {
 			showHelp(updateHelp)
@@ -53,7 +53,7 @@ func main() {
 			showHelp(removeHelp)
 			return
 		}
-		err = remove(resolvePkgName(args[0]))
+		err = removePkg(resolvePkgName(args[0]))
 	case "l":
 		if needsHelp(args) {
 			showHelp(listHelp)
@@ -73,7 +73,7 @@ func main() {
 		}
 		switch args[0] {
 		case "clear", "clean", "wipe", "c":
-			clearCache()
+			err = clearCache()
 		}
 	default:
 		fmt.Println("Unknown command:", os.Args[1])
