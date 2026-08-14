@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"text/tabwriter"
+	"time"
 )
 
 func listAll() error {
@@ -42,9 +43,11 @@ func listTarget(pkgName string) error {
 	fmt.Printf("Source: %s\n\n", p.Source)
 	fmt.Printf("Binary: %s\n", p.BinaryPath)
 	if p.LastUpdated != p.InstalledAt {
-		fmt.Printf("Last Updated: %s\n", p.LastUpdated)
+		t, _ := time.Parse(time.RFC3339, p.LastUpdated)
+		fmt.Printf("Last Updated: %s\n", t.Format("02 Jan 06 15:04"))
 	}
-	fmt.Printf("Installed: %s\n", p.InstalledAt)
+	t, _ := time.Parse(time.RFC3339, p.InstalledAt)
+	fmt.Printf("Installed: %s\n", t.Format("02 Jan 06 15:04"))
 
 	return nil
 }

@@ -123,10 +123,10 @@ func installPkg(input, explicitName string) error {
 			existingPkg.Tags = append(existingPkg.Tags, pkg.CurrentTag)
 		}
 		existingPkg.CurrentTag = pkg.CurrentTag
-		existingPkg.LastUpdated = time.Now().Format("02 Jan 06 15:04")
+		existingPkg.LastUpdated = time.Now().Format(time.RFC3339)
 		reg.Packages[explicitName] = existingPkg
 	} else {
-		pkg.InstalledAt = time.Now().Format("02 Jan 06 15:04")
+		pkg.InstalledAt = time.Now().Format(time.RFC3339)
 		pkg.LastUpdated = pkg.InstalledAt
 		pkg.Tags = []tag{pkg.CurrentTag}
 		reg.Packages[explicitName] = *pkg

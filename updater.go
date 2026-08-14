@@ -66,7 +66,7 @@ func updatePkg(existingPkg pkg, newTag tag) error {
 
 	updatedPkg := existingPkg
 	updatedPkg.CurrentTag = newTag
-	updatedPkg.LastUpdated = time.Now().Format("02 Jan 06 15:04")
+	updatedPkg.LastUpdated = time.Now().Format(time.RFC3339)
 
 	found := -1
 	for i, t := range updatedPkg.Tags {
