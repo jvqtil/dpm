@@ -64,6 +64,7 @@ func updatePkg(pkg Package, newTag Tag) error {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
+	oldTag := pkg.CurrentTag.TagName
 	pkg.AddTag(newTag)
 	if err := pkg.SetCurrentTag(newTag); err != nil {
 		return err
@@ -81,7 +82,7 @@ func updatePkg(pkg Package, newTag Tag) error {
 		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
-	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), pkg.CurrentTag.TagName, newTag.TagName)
+	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), oldTag, newTag.TagName)
 	return nil
 }
 
