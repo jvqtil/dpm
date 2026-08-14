@@ -23,6 +23,12 @@ func resolveAsset(pkg *pkg) (string, error) {
 		return "", err
 	}
 
+	if pkg.CurrentTag.AssetSize == 0 {
+		if info, err := os.Stat(src); err == nil {
+			pkg.CurrentTag.AssetSize = info.Size()
+		}
+	}
+
 	if !isArchive(pkg.CurrentTag.AssetName) {
 		return src, nil
 	}

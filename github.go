@@ -79,6 +79,10 @@ func checkGithubTag(source, tag string) (*ghRelease, error) {
 }
 
 func resolveGithub(source, name string, release *ghRelease) (*pkg, error) {
+	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
+		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
+	}
+
 	asset := matchGhAsset(release.Assets)
 	if asset == nil {
 		var err error
