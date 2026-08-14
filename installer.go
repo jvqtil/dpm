@@ -114,6 +114,7 @@ func installPkg(input, explicitName string) error {
 		}
 		ePkg.SourceType = pkg.SourceType
 		ePkg.Source = pkg.Source
+		ePkg.BinaryPath = pkg.BinaryPath
 		ePkg.LastUpdated = time.Now().Format(time.RFC3339)
 		reg.Packages[explicitName] = ePkg
 	} else {
