@@ -17,8 +17,8 @@ func removePkg(pkgName string) error {
 	}
 
 	var tagVerb string
-	if p.CurrentTag.TagName != "" {
-		tagVerb = "(" + p.CurrentTag.TagName + ")"
+	if p.CurrentTag.Name != "" {
+		tagVerb = "(" + p.CurrentTag.Name + ")"
 	}
 	if !confirm(fmt.Sprintf("Remove %s %s?", green(pkgName), tagVerb)) {
 		fmt.Println("Aborted")

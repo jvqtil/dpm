@@ -26,7 +26,7 @@ func updatePkg(pkg Package, newTag Tag) error {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
-	oldTag := pkg.CurrentTag.TagName
+	oldTag := pkg.CurrentTag.Name
 	pkg.AddTag(newTag)
 	if err := pkg.SetCurrentTag(newTag); err != nil {
 		return err
@@ -38,7 +38,7 @@ func updatePkg(pkg Package, newTag Tag) error {
 		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
-	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), oldTag, newTag.TagName)
+	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), oldTag, newTag.Name)
 	return nil
 }
 
@@ -67,8 +67,8 @@ func updateTarget(pkgName string) error {
 			return fmt.Errorf("failed to check version: %w", err)
 		}
 
-		if existingPkg.CurrentTag.TagName == release.TagName {
-			fmt.Printf("%s is already up to date (%s)\n", green(pkgName), existingPkg.CurrentTag.TagName)
+		if existingPkg.CurrentTag.Name == release.Name {
+			fmt.Printf("%s is already up to date (%s)\n", green(pkgName), existingPkg.CurrentTag.Name)
 			return nil
 		}
 
@@ -110,7 +110,7 @@ func updateAll() error {
 				continue
 			}
 
-			if release.TagName != p.CurrentTag.TagName {
+			if release.Name != p.CurrentTag.Name {
 				updates = append(updates, pending{
 					item:    p,
 					release: release,
@@ -126,7 +126,7 @@ func updateAll() error {
 
 	fmt.Printf("\n=> Updates available (%d)\n", len(updates))
 	for _, u := range updates {
-		fmt.Printf("  %s  %s -> %s\n", u.item.Name, u.item.CurrentTag.TagName, u.release.TagName)
+		fmt.Printf("  %s  %s -> %s\n", u.item.Name, u.item.CurrentTag.Name, u.release.Name)
 	}
 
 	if !confirm("\nUpdate all?") {

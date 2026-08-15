@@ -19,7 +19,7 @@ type Package struct {
 }
 
 type Tag struct {
-	TagName   string `json:"tag_name"`
+	Name      string `json:"tag_name"`
 	AssetName string `json:"asset_name"`
 	AssetURL  string `json:"asset_url"`
 	AssetPath string `json:"asset_path"`

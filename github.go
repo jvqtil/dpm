@@ -10,8 +10,8 @@ import (
 )
 
 type ghRelease struct {
-	TagName string    `json:"tag_name"`
-	Assets  []ghAsset `json:"assets"`
+	Name   string    `json:"tag_name"`
+	Assets []ghAsset `json:"assets"`
 }
 
 type ghAsset struct {
@@ -98,7 +98,7 @@ func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
 		Source:     source,
 		BinaryPath: filepath.Join(cfg.BinDir, name),
 		CurrentTag: Tag{
-			TagName:   release.TagName,
+			Name:      release.Name,
 			AssetName: asset.Name,
 			AssetURL:  asset.URL,
 			AssetSize: asset.Size,

@@ -22,7 +22,7 @@ func listAll() error {
 	fmt.Printf("=> Installed packages (%d)\n", len(reg.Packages))
 	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
 	for _, p := range reg.Packages {
-		fmt.Fprintf(w, "%s\t%s\n", p.Name, p.CurrentTag.TagName)
+		fmt.Fprintf(w, "%s\t%s\n", p.Name, p.CurrentTag.Name)
 	}
 	w.Flush()
 
@@ -39,7 +39,7 @@ func listTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	fmt.Printf("%s%s\n", green(p.Name), getTagVerb(p.CurrentTag.TagName))
+	fmt.Printf("%s%s\n", green(p.Name), getTagVerb(p.CurrentTag.Name))
 	fmt.Printf("Source: %s\n\n", p.Source)
 	fmt.Printf("Binary: %s\n", p.BinaryPath)
 	if p.LastUpdated != p.InstalledAt {

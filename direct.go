@@ -23,7 +23,7 @@ func resolveDirect(source, name, tag string) (*Package, error) {
 		Source:     normalizeSource(source),
 		BinaryPath: filepath.Join(cfg.BinDir, name),
 		CurrentTag: Tag{
-			TagName:   tag,
+			Name:      tag,
 			AssetName: filepath.Base(source),
 			AssetURL:  assetURL,
 		},

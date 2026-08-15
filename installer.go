@@ -24,8 +24,8 @@ func installPkg(input, explicitName string) error {
 	ePkg, exists := reg.Packages[explicitName]
 	if exists {
 		var tagVerb string
-		if ePkg.CurrentTag.TagName != "" {
-			tagVerb = "(" + ePkg.CurrentTag.TagName + ")"
+		if ePkg.CurrentTag.Name != "" {
+			tagVerb = "(" + ePkg.CurrentTag.Name + ")"
 		}
 		fmt.Printf("%s is already installed %s\n", green(ePkg.Name), tagVerb)
 		if !confirm("Reinstall?") {
@@ -61,7 +61,7 @@ func installPkg(input, explicitName string) error {
 
 	border := strings.Repeat("═", 40)
 	fmt.Println(border)
-	fmt.Printf("%s%s (%s)\n\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.TagName), pkg.SourceType)
+	fmt.Printf("%s%s (%s)\n\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.Name), pkg.SourceType)
 	assetNameFmt := pkg.CurrentTag.AssetName
 	if pkg.SourceType == "local" {
 		assetNameFmt = pkg.CurrentTag.AssetPath
@@ -117,6 +117,6 @@ func installPkg(input, explicitName string) error {
 		return fmt.Errorf("failed to save registry, rolled back: %w", err)
 	}
 
-	fmt.Printf("=> Installed package %s%s\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.TagName))
+	fmt.Printf("=> Installed package %s%s\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.Name))
 	return nil
 }

@@ -14,9 +14,9 @@ func resolveAsset(pkg Package, tag *Tag) (string, error) {
 	var destDir string
 	switch pkg.SourceType {
 	case "github.com":
-		destDir = filepath.Join(cfg.CacheDir, pkg.Source, tag.TagName)
+		destDir = filepath.Join(cfg.CacheDir, pkg.Source, tag.Name)
 	default:
-		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, tag.TagName)
+		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, tag.Name)
 	}
 	src, err := downloadAsset(tag, destDir)
 	if err != nil {

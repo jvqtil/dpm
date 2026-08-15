@@ -34,7 +34,7 @@ func resolveLocal(source, tag, name string) (*Package, error) {
 		Source:     source,
 		BinaryPath: filepath.Join(cfg.BinDir, name),
 		CurrentTag: Tag{
-			TagName:   tag,
+			Name:      tag,
 			AssetName: filepath.Base(source),
 			AssetPath: source,
 			AssetSize: file.Size(),
