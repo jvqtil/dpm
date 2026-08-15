@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -19,37 +17,12 @@ func updatePkg(pkg Package, newTag Tag) error {
 
 	dest := pkg.BinaryPath
 
-	backupPath := filepath.Join(os.TempDir(), "dpm-backup-"+filepath.Base(dest))
-	if _, err := os.Stat(dest); err == nil {
-		data, err := os.ReadFile(dest)
-		if err != nil {
-			return fmt.Errorf("failed to read existing binary for backup: %w", err)
-		}
-		if err := os.WriteFile(backupPath, data, 0755); err != nil {
-			return fmt.Errorf("failed to create backup: %w", err)
-		}
-		defer os.Remove(backupPath)
-	}
-
 	if err := cpToDest(src, dest); err != nil {
-		if _, statErr := os.Stat(backupPath); statErr == nil {
-			if restoreErr := cpToDest(backupPath, dest); restoreErr != nil {
-				return fmt.Errorf("copy failed and restoration failed: copy error: %w, restore error: %v", err, restoreErr)
-			}
-			return fmt.Errorf("copy failed, rolled back: %w", err)
-		}
-		return err
+		return fmt.Errorf("copy failed: %w", err)
 	}
 
 	reg, err := loadRegistry()
 	if err != nil {
-		if _, statErr := os.Stat(backupPath); statErr == nil {
-			if restoreErr := cpToDest(backupPath, dest); restoreErr != nil {
-				return fmt.Errorf("failed to load registry and restoration failed: load error: %w, restore error: %v", err, restoreErr)
-			}
-			return fmt.Errorf("failed to load registry, rolled back: %w", err)
-		}
-		rmBin(dest)
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
@@ -62,12 +35,6 @@ func updatePkg(pkg Package, newTag Tag) error {
 	reg.Packages[pkg.Name] = pkg
 
 	if err := saveRegistry(reg); err != nil {
-		if _, statErr := os.Stat(backupPath); statErr == nil {
-			if restoreErr := os.Rename(backupPath, dest); restoreErr != nil {
-				return fmt.Errorf("failed to save registry and restoration failed: save error: %w, restore error: %v", err, restoreErr)
-			}
-			return fmt.Errorf("failed to save registry, rolled back: %w", err)
-		}
 		return fmt.Errorf("failed to save registry: %w", err)
 	}
 
