@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -59,7 +57,6 @@ func installPkg(input, explicitName string) error {
 				return err
 			}
 		}
-
 	}
 
 	border := strings.Repeat("═", 40)
@@ -69,11 +66,7 @@ func installPkg(input, explicitName string) error {
 	if pkg.SourceType == "local" {
 		assetNameFmt = pkg.CurrentTag.AssetPath
 	}
-	suffix := ""
-	if isArchive(pkg.CurrentTag.AssetName) {
-		suffix = " — " + cyan("archive")
-	}
-	fmt.Printf("↓ %s%s ", assetNameFmt, suffix)
+	fmt.Printf("↓ %s ", assetNameFmt)
 	if pkg.CurrentTag.AssetSize != 0 {
 		fmt.Printf("(%s)", humanize.Bytes(uint64(pkg.CurrentTag.AssetSize)))
 	}
@@ -95,11 +88,6 @@ func installPkg(input, explicitName string) error {
 		}
 		if pkg.CurrentTag.AssetPath == "" {
 			pkg.CurrentTag.AssetPath = src
-		}
-		if isArchive(pkg.CurrentTag.AssetName) {
-			if info, err := os.Stat(src); err == nil {
-				fmt.Printf("%s %s (%s)\n", bold("Extracted:"), filepath.Base(pkg.CurrentTag.AssetPath), humanize.Bytes(uint64(info.Size())))
-			}
 		}
 	}
 
