@@ -27,7 +27,7 @@ func installPkg(input, explicitName string) error {
 		if ePkg.CurrentTag.TagName != "" {
 			tagVerb = "(" + ePkg.CurrentTag.TagName + ")"
 		}
-		fmt.Printf("=> %s is already installed %s\n", green(ePkg.Name), tagVerb)
+		fmt.Printf("%s is already installed %s\n", green(ePkg.Name), tagVerb)
 		if !confirm("Reinstall?") {
 			fmt.Println("Aborted")
 			return nil
