@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"archive/zip"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -11,11 +12,40 @@ import (
 	"strings"
 )
 
-func isArchive(name string) bool {
-	name = strings.ToLower(name)
-	return strings.HasSuffix(name, ".tar.gz") ||
-		strings.HasSuffix(name, ".tgz") ||
-		strings.HasSuffix(name, ".zip")
+type ArchiveKind int
+
+const (
+	NotArchive ArchiveKind = iota
+	ArchiveZip
+	ArchiveGzip
+)
+
+var (
+	zipMagic  = []byte{0x50, 0x4B, 0x03, 0x04}
+	gZipMagic = []byte{0x1F, 0x8B}
+)
+
+func sniffArchiveKind(path string) (ArchiveKind, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return NotArchive, fmt.Errorf("open: %w", err)
+	}
+	defer f.Close()
+
+	buf := make([]byte, 262)
+	n, err := io.ReadFull(f, buf)
+	if err != nil && err != io.ErrUnexpectedEOF {
+		return NotArchive, fmt.Errorf("read: %w", err)
+	}
+	buf = buf[:n]
+
+	switch {
+	case bytes.HasPrefix(buf, gZipMagic):
+		return ArchiveGzip, nil
+	case bytes.HasPrefix(buf, zipMagic):
+		return ArchiveZip, nil
+	}
+	return NotArchive, nil
 }
 
 func isDocFile(name string) bool {
@@ -30,17 +60,16 @@ func isDocFile(name string) bool {
 	return strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".txt")
 }
 
-func extractArchive(archivePath string) ([]string, error) {
+func extractArchive(archivePath string, kind ArchiveKind) ([]string, error) {
 	destDir := archivePath + "-extracted"
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create temp dir for extracted archive: %w", err)
 	}
 
-	name := strings.ToLower(archivePath)
-	switch {
-	case strings.HasSuffix(name, ".tar.gz"), strings.HasSuffix(name, ".tgz"):
+	switch kind {
+	case ArchiveGzip:
 		return extractTarGz(archivePath, destDir)
-	case strings.HasSuffix(name, ".zip"):
+	case ArchiveZip:
 		return extractZip(archivePath, destDir)
 	default:
 		return nil, fmt.Errorf("unsupported archive: %s", archivePath)

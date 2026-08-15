@@ -29,11 +29,15 @@ func resolveAsset(pkg Package, tag *Tag) (string, error) {
 		}
 	}
 
-	if !isArchive(tag.AssetName) {
+	kind, err := sniffArchiveKind(src)
+	if err != nil {
+		return "", fmt.Errorf("failed to sniff archive kind: %w", err)
+	}
+	if kind == NotArchive {
 		return src, nil
 	}
 
-	files, err := extractArchive(src)
+	files, err := extractArchive(src, kind)
 	if err != nil {
 		return "", fmt.Errorf("failed to extract archive: %w", err)
 	}
