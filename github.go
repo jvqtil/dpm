@@ -79,11 +79,7 @@ func checkGithubTag(source, tag string) (*ghRelease, error) {
 	return release, nil
 }
 
-func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
-	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
-		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
-	}
-
+func resolveGhTag(release *ghRelease) (*Tag, error) {
 	asset := matchGhAsset(release.Assets)
 	if asset == nil {
 		var err error
@@ -93,18 +89,31 @@ func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
 		}
 	}
 
+	return &Tag{
+		Name:      release.Name,
+		AssetName: asset.Name,
+		AssetURL:  asset.URL,
+		AssetSize: asset.Size,
+	}, nil
+}
+
+func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
+	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
+		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
+	}
+
+	tag, err := resolveGhTag(release)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Package{
 		Name:       name,
 		SourceType: getSourceDomain(source),
 		Source:     source,
 		BinaryPath: filepath.Join(cfg.BinDir, name),
-		CurrentTag: Tag{
-			Name:      release.Name,
-			AssetName: asset.Name,
-			AssetURL:  asset.URL,
-			AssetSize: asset.Size,
-		},
-		Tags: []Tag{},
+		CurrentTag: *tag,
+		Tags:       []Tag{},
 	}, nil
 }
 
