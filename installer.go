@@ -55,9 +55,8 @@ func installPkg(source, tag, name string) error {
 	}
 
 	// print package info & ask to install
-	border := strings.Repeat("═", 40)
 	fmt.Println(border)
-	fmt.Printf("%s%s (%s)\n\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.Name), pkg.SourceType)
+	fmt.Printf("%s - %s (%s)\n\n", green(pkg.Name), pkg.CurrentTag.Name, pkg.SourceType)
 	assetNameFmt := pkg.CurrentTag.AssetName
 	if pkg.SourceType == "local" {
 		assetNameFmt = pkg.CurrentTag.AssetPath
@@ -104,6 +103,6 @@ func installPkg(source, tag, name string) error {
 		return fmt.Errorf("failed to save registry, rolled back: %w", err)
 	}
 
-	fmt.Printf("=> Installed package %s%s\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.Name))
+	fmt.Printf("=> Installed package %s - %s\n", green(pkg.Name), pkg.CurrentTag.Name)
 	return nil
 }

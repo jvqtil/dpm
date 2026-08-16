@@ -16,7 +16,7 @@ COMMANDS:
   u - update     Update packages
   r - remove     Remove a package
   l - list       List installed packages
-  cache         Manage cached downloads
+  cache          Manage cached assets
 
 Run 'dpm <command> -h' for more information on a command.`
 
@@ -37,7 +37,7 @@ ARGUMENTS:
 const updateHelp = `dpm update - check for and install updates
 
 USAGE:
-  dpm u <package>
+  dpm u [package]
 
 Without arguments, checks all installed packages and offers to update
 any that have a newer release available.
@@ -54,8 +54,7 @@ Removes the binary from your bin directory and drops it from the registry.`
 const listHelp = `dpm list - show installed packages
 
 USAGE:
-  dpm list
-  dpm list <package>
+  dpm list [package]
 
 Without arguments, lists all installed packages with their versions.
 With a package name, shows details of a package.`

@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
+	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
 func listAll() error {
@@ -29,7 +33,7 @@ func listAll() error {
 	return nil
 }
 
-func listTarget(pkgName string) error {
+func showPkgInfo(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
 		return fmt.Errorf("failed to load registry: %w", err)
@@ -39,20 +43,40 @@ func listTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	fmt.Printf("%s%s\n", green(p.Name), getTagVerb(p.CurrentTag.Name))
-	fmt.Printf("Source: %s\n\n", p.Source)
-	fmt.Printf("Binary: %s\n", p.BinaryPath)
+	fmt.Println(border)
+	fmt.Printf("%s - %s\n", green(p.Name), p.CurrentTag.Name)
+	fmt.Printf("%s\n", p.Source)
+	fmt.Printf("%s\n", p.BinaryPath)
+	fmt.Println()
+
+	tags := make([]string, len(p.Tags))
+	for i, t := range p.Tags {
+		tags[i] = t.Name
+	}
+	sort.Strings(tags)
+	slices.Reverse(tags)
+
+	for _, name := range tags {
+		if name == p.CurrentTag.Name {
+			fmt.Printf(" %s - current\n", name)
+		} else {
+			fmt.Printf(" %s\n", name)
+		}
+	}
+
+	fmt.Println()
 	if p.LastUpdated != p.InstalledAt {
 		t, _ := time.Parse(time.RFC3339, p.LastUpdated)
-		fmt.Printf("Last Updated: %s\n", t.Format("02 Jan 06 15:04"))
+		fmt.Printf("last updated: %s\n", humanize.Time(t))
 	}
 	t, _ := time.Parse(time.RFC3339, p.InstalledAt)
-	fmt.Printf("Installed: %s\n", t.Format("02 Jan 06 15:04"))
+	fmt.Printf("installed: %s\n", t.Format("02 Jan 06 15:04"))
+	fmt.Println(border)
 
 	return nil
 }
 
-func listTargetJSON(pkgName string) error {
+func showPkgInfoJSON(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
 		return fmt.Errorf("failed to load registry: %w", err)

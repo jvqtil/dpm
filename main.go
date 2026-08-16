@@ -67,9 +67,9 @@ func main() {
 		if len(args) < 1 {
 			err = listAll()
 		} else if len(args) >= 2 && args[1] == "--json" {
-			err = listTargetJSON(resolvePkgName(args[0]))
+			err = showPkgInfoJSON(resolvePkgName(args[0]))
 		} else {
-			err = listTarget(resolvePkgName(args[0]))
+			err = showPkgInfo(resolvePkgName(args[0]))
 		}
 	case "cache":
 		if needsHelp(args) || len(args) < 1 {
@@ -77,7 +77,7 @@ func main() {
 			return
 		}
 		switch args[0] {
-		case "clear", "clean", "wipe", "c":
+		case "clear", "c":
 			err = clearCache()
 		}
 	default:

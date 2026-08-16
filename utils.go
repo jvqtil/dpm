@@ -16,6 +16,8 @@ var (
 	red   = color.New(color.FgRed).SprintFunc()
 	cyan  = color.New(color.FgCyan).SprintFunc()
 	bold  = color.New(color.Bold).SprintFunc()
+
+	border = strings.Repeat("═", 40)
 )
 
 func resolvePkgName(input string) string {
@@ -25,14 +27,6 @@ func resolvePkgName(input string) string {
 		return s[idx+1:]
 	}
 	return s
-}
-
-func getTagVerb(tag string) string {
-	var tagVerb string
-	if tag != "" {
-		tagVerb = "@" + tag
-	}
-	return tagVerb
 }
 
 func confirm(prompt string) bool {
