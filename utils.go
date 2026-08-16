@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -39,6 +40,38 @@ func confirm(prompt string) bool {
 	}
 	answer := strings.ToLower(strings.TrimSpace(line))
 	return answer == "y" || answer == "yes"
+}
+
+func picker(items []string, prompt string) (string, error) {
+	if len(items) == 0 {
+		return "", fmt.Errorf("nothing to pick from")
+	}
+
+	fmt.Printf("\n%s\n", prompt)
+	for i, n := range items {
+		fmt.Printf("%d) %s\n", i+1, n)
+	}
+
+	fmt.Printf("\nYour pick? ")
+	reader := bufio.NewReader(os.Stdin)
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("failed to read input: %w", err)
+	}
+	line = strings.TrimSpace(line)
+	if line == "" {
+		os.Exit(0)
+	}
+
+	choice, err := strconv.Atoi(line)
+	if err != nil {
+		return "", fmt.Errorf("invalid input: %w", err)
+	}
+	if choice < 1 || choice > len(items) {
+		return "", fmt.Errorf("choice %d out of range", choice)
+	}
+
+	return items[choice-1], nil
 }
 
 func runSudo(args ...string) error {

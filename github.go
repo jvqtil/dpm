@@ -143,7 +143,7 @@ func pickGhAsset(assets []ghAsset) (*ghAsset, error) {
 		names[i] = a.Name
 	}
 
-	picked, err := pickAsset(names, fmt.Sprintf("Found %d assets - host: %s/%s", len(assets), runtime.GOOS, runtime.GOARCH))
+	picked, err := picker(names, fmt.Sprintf("Found %d assets - host: %s/%s", len(assets), runtime.GOOS, runtime.GOARCH))
 	if err != nil {
 		return nil, err
 	}

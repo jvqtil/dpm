@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
@@ -66,7 +64,7 @@ func resolveAsset(pkg Package, tag *Tag) (string, error) {
 		return nameToPath[matched], nil
 	}
 
-	picked, err := pickAsset(names, fmt.Sprintf("Found %d files in archive - host: %s/%s", len(names), runtime.GOOS, runtime.GOARCH))
+	picked, err := picker(names, fmt.Sprintf("Found %d files in archive - host: %s/%s", len(names), runtime.GOOS, runtime.GOARCH))
 	if err != nil {
 		return "", err
 	}
@@ -118,38 +116,6 @@ func matchByOsArch(names []string) (string, bool) {
 	}
 
 	return "", false
-}
-
-func pickAsset(names []string, prompt string) (string, error) {
-	if len(names) == 0 {
-		return "", fmt.Errorf("nothing to pick from")
-	}
-
-	fmt.Printf("\n%s\n", prompt)
-	for i, n := range names {
-		fmt.Printf("%d) %s\n", i+1, n)
-	}
-
-	fmt.Printf("\nYour pick? ")
-	reader := bufio.NewReader(os.Stdin)
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("failed to read input: %w", err)
-	}
-	line = strings.TrimSpace(line)
-	if line == "" {
-		os.Exit(0)
-	}
-
-	choice, err := strconv.Atoi(line)
-	if err != nil {
-		return "", fmt.Errorf("invalid input: %w", err)
-	}
-	if choice < 1 || choice > len(names) {
-		return "", fmt.Errorf("choice %d out of range", choice)
-	}
-
-	return names[choice-1], nil
 }
 
 func resolveCachePath(p Package, t Tag) string {
