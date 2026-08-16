@@ -60,10 +60,18 @@ USAGE:
 Without arguments, lists all installed packages with their versions.
 With a package name, shows details of a package.`
 
+const fetchHelp = `dpm fetch - download a tag
+
+USAGE:
+  dpm fetch <pkg/source> <tag>
+
+Downloads asset from the new tag to the cache directory (see 'cache_dir' in config)
+and adds it to the package tags list.`
+
 const useHelp = `dpm use - switch to a different tag
 
 USAGE:
-  dpm use <package> <tag>
+  dpm use <package> [tag]
 
 Switches to a tag already present in the package's history without
 fetching release info. The tag must have been installed before.`

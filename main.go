@@ -71,6 +71,12 @@ func main() {
 		} else {
 			err = showPkgInfo(resolvePkgName(args[0]))
 		}
+	case "fetch":
+		if needsHelp(args) || len(args) < 2 {
+			showHelp(fetchHelp)
+			return
+		}
+		err = fetchTag(resolvePkgName(args[0]), args[1])
 	case "use":
 		if needsHelp(args) || len(args) < 1 {
 			showHelp(useHelp)
