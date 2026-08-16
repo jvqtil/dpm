@@ -7,25 +7,6 @@ import (
 	"path/filepath"
 )
 
-type Package struct {
-	Name        string `json:"pkg_name"`
-	CurrentTag  Tag    `json:"current_tag"`
-	Tags        []Tag  `json:"tags"`
-	SourceType  string `json:"source_type"`
-	Source      string `json:"source"`
-	BinaryPath  string `json:"binary_path"`
-	InstalledAt string `json:"installed_at"`
-	LastUpdated string `json:"last_updated"`
-}
-
-type Tag struct {
-	Name      string `json:"tag_name"`
-	AssetName string `json:"asset_name"`
-	AssetURL  string `json:"asset_url"`
-	AssetPath string `json:"asset_path"`
-	AssetSize int64  `json:"asset_size"`
-}
-
 type Registry struct {
 	Packages map[string]Package `json:"packages"`
 }

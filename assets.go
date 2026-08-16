@@ -11,14 +11,7 @@ import (
 )
 
 func resolveAsset(pkg Package, tag *Tag) (string, error) {
-	var destDir string
-	switch pkg.SourceType {
-	case "github.com":
-		destDir = filepath.Join(cfg.CacheDir, pkg.Source, tag.Name)
-	default:
-		destDir = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(pkg.Source)), pkg.Name, tag.Name)
-	}
-	src, err := downloadAsset(tag, destDir)
+	src, err := downloadAsset(tag, resolveCachePath(pkg, *tag))
 	if err != nil {
 		return "", err
 	}
@@ -157,4 +150,15 @@ func pickAsset(names []string, prompt string) (string, error) {
 	}
 
 	return names[choice-1], nil
+}
+
+func resolveCachePath(p Package, t Tag) string {
+	var cachePath string
+	switch p.SourceType {
+	case "github.com":
+		cachePath = filepath.Join(cfg.CacheDir, p.Source, t.Name)
+	default:
+		cachePath = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(p.Source)), p.Name, t.Name)
+	}
+	return cachePath
 }

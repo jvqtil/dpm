@@ -8,35 +8,30 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-func installPkg(input, explicitName string) error {
-	source, tag := resolveTag(input)
-
-	if explicitName == "" {
-		explicitName = resolvePkgName(source)
+func installPkg(source, tag, name string) error {
+	if name == "" {
+		name = resolvePkgName(source)
 	}
-	explicitName = strings.ToLower(explicitName)
+	name = strings.ToLower(name)
 
 	reg, err := loadRegistry()
 	if err != nil {
 		return fmt.Errorf("failed to load registry: %w", err)
 	}
 
-	ePkg, exists := reg.Packages[explicitName]
+	ePkg, exists := reg.Packages[name]
 	if exists {
-		var tagVerb string
-		if ePkg.CurrentTag.Name != "" {
-			tagVerb = "(" + ePkg.CurrentTag.Name + ")"
-		}
-		fmt.Printf("%s is already installed %s\n", green(ePkg.Name), tagVerb)
+		fmt.Printf("%s is already installed (%s)\n", green(ePkg.Name), ePkg.CurrentTag.Name)
 		if !confirm("Reinstall?") {
 			fmt.Println("Aborted")
 			return nil
 		}
 	}
 
+	// resolve package
 	var pkg *Package
 	if isLocalPkg(source) {
-		pkg, err = resolveLocal(source, tag, explicitName)
+		pkg, err = resolveLocal(source, tag, name)
 		if err != nil {
 			return fmt.Errorf("failed to resolve: %w", err)
 		}
@@ -47,18 +42,19 @@ func installPkg(input, explicitName string) error {
 			if err != nil {
 				return err
 			}
-			pkg, err = resolveGithub(source, explicitName, release)
+			pkg, err = resolveGithub(source, name, release)
 			if err != nil {
 				return err
 			}
 		} else {
-			pkg, err = resolveDirect(source, explicitName, tag)
+			pkg, err = resolveDirect(source, name, tag)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
+	// print package info & ask to install
 	border := strings.Repeat("═", 40)
 	fmt.Println(border)
 	fmt.Printf("%s%s (%s)\n\n", green(pkg.Name), getTagVerb(pkg.CurrentTag.Name), pkg.SourceType)
@@ -73,11 +69,12 @@ func installPkg(input, explicitName string) error {
 	fmt.Printf("\n→ %s\n", pkg.BinaryPath)
 	fmt.Println(border)
 
-	if !exists && !confirm("Install this package?") {
+	if !confirm("Install this package?") {
 		fmt.Println("Aborted")
 		return nil
 	}
 
+	// get source file (local/cache)
 	var src string
 	if pkg.SourceType == "local" {
 		src = pkg.CurrentTag.AssetPath
@@ -91,26 +88,16 @@ func installPkg(input, explicitName string) error {
 		}
 	}
 
+	// move binary
 	if err := cpToDest(src, pkg.BinaryPath); err != nil {
 		return err
 	}
 
-	if exists {
-		ePkg.AddTag(pkg.CurrentTag)
-		if err := ePkg.SetCurrentTag(pkg.CurrentTag); err != nil {
-			return err
-		}
-		ePkg.SourceType = pkg.SourceType
-		ePkg.Source = pkg.Source
-		ePkg.BinaryPath = pkg.BinaryPath
-		ePkg.LastUpdated = time.Now().Format(time.RFC3339)
-		reg.Packages[explicitName] = ePkg
-	} else {
-		pkg.InstalledAt = time.Now().Format(time.RFC3339)
-		pkg.LastUpdated = pkg.InstalledAt
-		pkg.Tags = []Tag{pkg.CurrentTag}
-		reg.Packages[explicitName] = *pkg
-	}
+	// fill missing entries in package
+	pkg.InstalledAt = time.Now().Format(time.RFC3339)
+	pkg.LastUpdated = pkg.InstalledAt
+	pkg.Tags = []Tag{pkg.CurrentTag}
+	reg.Packages[name] = *pkg
 
 	if err := saveRegistry(reg); err != nil {
 		rmBin(pkg.BinaryPath)

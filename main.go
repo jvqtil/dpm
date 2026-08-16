@@ -33,11 +33,16 @@ func main() {
 			showHelp(installHelp)
 			return
 		}
-		var pkgName string
+		var name string
+		var tag string
 		if len(args) > 1 {
-			pkgName = args[1]
+			tag = args[1]
+
+			if len(args) > 2 {
+				name = args[2]
+			}
 		}
-		err = installPkg(args[0], pkgName)
+		err = installPkg(args[0], tag, name)
 	case "u":
 		if needsHelp(args) {
 			showHelp(updateHelp)

@@ -1,23 +1,36 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
-func (p *Package) AddTag(t Tag) {
-	for i, existing := range p.Tags {
-		if existing.Name == t.Name {
-			p.Tags[i] = t
-			return
-		}
+func switchTag(pkg Package, tag Tag, msg string) error {
+	src, err := resolveAsset(pkg, &tag)
+	if err != nil {
+		return err
 	}
-	p.Tags = append(p.Tags, t)
-}
 
-func (p *Package) SetCurrentTag(t Tag) error {
-	for _, existing := range p.Tags {
-		if existing.Name == t.Name {
-			p.CurrentTag = existing
-			return nil
-		}
+	if err := cpToDest(src, pkg.BinaryPath); err != nil {
+		return err
 	}
-	return fmt.Errorf("tag %q not found for package %s", t.Name, p.Name)
+
+	reg, err := loadRegistry()
+	if err != nil {
+		return err
+	}
+
+	pkg.AddTag(tag)
+	if err := pkg.SetCurrentTag(tag); err != nil {
+		return err
+	}
+	pkg.LastUpdated = time.Now().Format(time.RFC3339)
+	reg.Packages[pkg.Name] = pkg
+
+	if err := saveRegistry(reg); err != nil {
+		return err
+	}
+
+	fmt.Printf("=> %s\n", msg)
+	return nil
 }

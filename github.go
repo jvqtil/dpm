@@ -70,7 +70,8 @@ func isGithubSource(source string) bool {
 }
 
 func checkGithubTag(source, tag string) (*ghRelease, error) {
-	fmt.Printf("=> Fetching releases of %s%s\n", source, getTagVerb(tag))
+	// Maybe print it with --verbose flag?
+	//fmt.Printf("=> Fetching releases of %s%s\n", source, getTagVerb(tag))
 	release, err := fetchGhRelease(source, tag)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch release: %w", err)

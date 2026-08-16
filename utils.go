@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 )
 
@@ -18,14 +17,6 @@ var (
 	cyan  = color.New(color.FgCyan).SprintFunc()
 	bold  = color.New(color.Bold).SprintFunc()
 )
-
-func resolveTag(input string) (source, tag string) {
-	s := strings.TrimSpace(input)
-	if idx := strings.LastIndex(s, "@"); idx != -1 {
-		return s[:idx], s[idx+1:]
-	}
-	return s, ""
-}
 
 func resolvePkgName(input string) string {
 	s := strings.TrimSuffix(input, "/")
@@ -86,8 +77,6 @@ func cpToDest(src, dest string) error {
 		return err
 	}
 
-	fmt.Println("=> Copying binary, may require password")
-
 	if err := runSudo("mkdir", "-p", filepath.Dir(dest)); err != nil {
 		return fmt.Errorf("failed to create a directory: %w", err)
 	}
@@ -131,23 +120,4 @@ func dirSize(path string) (size int64) {
 		return nil
 	})
 	return
-}
-
-func clearCache() error {
-	cacheSize := dirSize(cfg.CacheDir)
-	cacheSizeFmt := humanize.Bytes(uint64((cacheSize)))
-	if cacheSize == 0 {
-		fmt.Println("=> Cache directory is empty, nothing to clear")
-		return nil
-	}
-	if !confirm(fmt.Sprintf("=> Cache directory size: %s.\nClear cache?", red(cacheSizeFmt))) {
-		return nil
-	}
-
-	if err := os.RemoveAll(cfg.CacheDir); err != nil {
-		return fmt.Errorf("failed to clear cache directory: %w", err)
-	}
-
-	fmt.Printf("=> Cleared %s of cache\n", red(cacheSizeFmt))
-	return nil
 }
