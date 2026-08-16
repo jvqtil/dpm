@@ -23,8 +23,8 @@ func listAll() error {
 		return nil
 	}
 
-	fmt.Printf("=> Installed packages (%d)\n", len(reg.Packages))
-	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
+	fmt.Printf("Installed packages (%d)\n", len(reg.Packages))
+	w := tabwriter.NewWriter(os.Stdout, 0, 4, 4, ' ', 0)
 	for _, p := range reg.Packages {
 		fmt.Fprintf(w, "%s\t%s\n", p.Name, p.CurrentTag.Name)
 	}

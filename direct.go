@@ -10,7 +10,7 @@ func resolveDirect(source, name, tag string) (*Package, error) {
 	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
 		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
 	}
-	if !strings.Contains(source, ".") {
+	if !strings.Contains(source, "/") {
 		return nil, fmt.Errorf("'%s' doesnt look like a valid source", source)
 	}
 
