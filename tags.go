@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"slices"
+	"sort"
 	"strings"
 	"time"
 )
@@ -47,8 +49,26 @@ func useTag(pkgName, tag string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
+	if tag == "" {
+		if len(pkg.Tags) == 0 {
+			return fmt.Errorf("no tags found for %s", pkg.Name)
+		}
+		tags := make([]string, len(pkg.Tags))
+		for i, t := range pkg.Tags {
+			tags[i] = t.Name
+		}
+		sort.Strings(tags)
+		slices.Reverse(tags)
+
+		tag, err = picker(tags, fmt.Sprintf("Select tag for %s", green(pkg.Name)))
+		if err != nil {
+			return err
+		}
+	}
+
 	if pkg.CurrentTag.Name == tag {
 		fmt.Printf("%s is already on %s\n", green(pkg.Name), tag)
+		return nil
 	}
 
 	var target *Tag

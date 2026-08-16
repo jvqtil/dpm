@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"slices"
-	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -53,7 +52,7 @@ func showPkgInfo(pkgName string) error {
 	for i, t := range p.Tags {
 		tags[i] = t.Name
 	}
-	sort.Strings(tags)
+	slices.Sort(tags)
 	slices.Reverse(tags)
 
 	for _, name := range tags {
