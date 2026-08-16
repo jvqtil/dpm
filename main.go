@@ -71,6 +71,12 @@ func main() {
 		} else {
 			err = showPkgInfo(resolvePkgName(args[0]))
 		}
+	case "use":
+		if needsHelp(args) || len(args) < 2 {
+			showHelp(useHelp)
+			return
+		}
+		err = useTag(resolvePkgName(args[0]), args[1])
 	case "cache":
 		if needsHelp(args) || len(args) < 1 {
 			showHelp(cacheHelp)

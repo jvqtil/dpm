@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -33,4 +34,33 @@ func switchTag(pkg Package, tag Tag, msg string) error {
 
 	fmt.Printf("=> %s\n", msg)
 	return nil
+}
+
+func useTag(pkgName, tag string) error {
+	reg, err := loadRegistry()
+	if err != nil {
+		return err
+	}
+
+	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	if !ok {
+		return fmt.Errorf("package %s is not installed", pkgName)
+	}
+
+	if pkg.CurrentTag.Name == tag {
+		fmt.Printf("%s is already on %s\n", green(pkg.Name), tag)
+	}
+
+	var target *Tag
+	for i, t := range pkg.Tags {
+		if t.Name == tag {
+			target = &pkg.Tags[i]
+			break
+		}
+	}
+	if target == nil {
+		return fmt.Errorf("tag %q not found for package %s", tag, pkg.Name)
+	}
+
+	return switchTag(pkg, *target, fmt.Sprintf("Switched %s to %s", green(pkg.Name), tag))
 }

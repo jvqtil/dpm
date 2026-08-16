@@ -16,6 +16,7 @@ COMMANDS:
   u - update     Update packages
   r - remove     Remove a package
   l - list       List installed packages
+  use            Switch to another tag
   cache          Manage cached assets
 
 Run 'dpm <command> -h' for more information on a command.`
@@ -58,6 +59,14 @@ USAGE:
 
 Without arguments, lists all installed packages with their versions.
 With a package name, shows details of a package.`
+
+const useHelp = `dpm use - switch to a different tag
+
+USAGE:
+  dpm use <package> <tag>
+
+Switches to a tag already present in the package's history without
+fetching release info. The tag must have been installed before.`
 
 const cacheHelp = `dpm cache - manage downloads cache
 
