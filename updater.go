@@ -3,44 +3,12 @@ package main
 import (
 	"fmt"
 	"strings"
-	"time"
 )
-
-func updatePkg(pkg Package, tag Tag) error {
-	src, err := resolveAsset(pkg, &tag)
-	if err != nil {
-		return err
-	}
-
-	if err := cpToDest(src, pkg.BinaryPath); err != nil {
-		return err
-	}
-
-	reg, err := loadRegistry()
-	if err != nil {
-		return err
-	}
-
-	oldTag := pkg.CurrentTag.Name
-	pkg.AddTag(tag)
-	if err := pkg.SetCurrentTag(tag); err != nil {
-		return err
-	}
-	pkg.LastUpdated = time.Now().Format(time.RFC3339)
-	reg.Packages[pkg.Name] = pkg
-
-	if err := saveRegistry(reg); err != nil {
-		return err
-	}
-
-	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), oldTag, tag.Name)
-	return nil
-}
 
 func updateTarget(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 
 	ePkg, ok := reg.Packages[strings.ToLower(pkgName)]
@@ -48,7 +16,7 @@ func updateTarget(pkgName string) error {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	var newPkg *Package
+	var tag *Tag
 	switch ePkg.SourceType {
 	case "local":
 		fmt.Printf("=> %s is a local package. Local packages can't be updated. Please reinstall it manually\n", green(pkgName))
@@ -67,7 +35,7 @@ func updateTarget(pkgName string) error {
 			return nil
 		}
 
-		newPkg, err = resolveGithub(ePkg.Source, ePkg.Name, release)
+		tag, err = resolveGhTag(release)
 		if err != nil {
 			return err
 		}
@@ -75,13 +43,13 @@ func updateTarget(pkgName string) error {
 		return fmt.Errorf("unsupported source type %s", ePkg.SourceType)
 	}
 
-	return switchTag(ePkg, newPkg.CurrentTag, fmt.Sprintf("Updated package %s to %s", green(ePkg.Name), newPkg.CurrentTag.Name))
+	return switchTag(ePkg, *tag, fmt.Sprintf("Updated package %s to %s", green(ePkg.Name), tag.Name))
 }
 
 func updateAll() error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 
 	if len(reg.Packages) == 0 {
@@ -130,11 +98,11 @@ func updateAll() error {
 
 	for _, u := range updates {
 		fmt.Println()
-		newPkg, err := resolveGithub(u.item.Source, u.item.Name, u.release)
+		tag, err := resolveGhTag(u.release)
 		if err != nil {
 			return err
 		}
-		if err := updatePkg(u.item, newPkg.CurrentTag); err != nil {
+		if err := switchTag(u.item, *tag, fmt.Sprintf("Updated package %s to %s", green(u.item.Name), tag.Name)); err != nil {
 			fmt.Printf("failed to update %s: %v\n", u.item.Name, err)
 		}
 	}
