@@ -54,10 +54,9 @@ Run `dpm <command> -h` for details on any command.
 
 ```sh
 dpm i cli/cli                       # github.com/cli/cli, latest release
-dpm i cli/cli@v2.40.0               # pin a specific tag
-dpm i github.com/cli/cli gh-cli     # explicit source + custom name
+dpm i cli/cli v2.40.0               # pin a specific tag
 dpm i ./mybinary                    # take a local file under management
-dpm i ~/Downloads/tool@v2           # local file with a version label
+dpm i ~/Downloads/tool v2           # local file with a version label
 dpm i example.com/binary            # binary on a remote website
 ```
 
@@ -70,7 +69,7 @@ dpm u               # check every installed package for updates
 dpm u gh-cli        # check and update just one
 ```
 
-Local packages are skipped — reinstall them manually with `dpm i` when you have a new file.
+Local packages are skipped — reinstall them manually with `dpm i` if you have a new file.
 
 ### Remove
 
@@ -82,7 +81,7 @@ dpm r gh-cli
 
 ```sh
 dpm l                 # everything installed
-dpm l gh-cli          # source, binary path, install date, etc.
+dpm l gh-cli          # details of a package
 dpm l gh-cli --json   # same but in JSON
 ```
 
