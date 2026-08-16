@@ -8,7 +8,7 @@ import (
 func removePkg(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 
 	p, ok := reg.Packages[strings.ToLower(pkgName)]

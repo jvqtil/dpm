@@ -16,7 +16,7 @@ func installPkg(source, tag, name string) error {
 
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 
 	ePkg, exists := reg.Packages[name]

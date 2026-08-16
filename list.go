@@ -16,7 +16,7 @@ import (
 func listAll() error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 	if len(reg.Packages) == 0 {
 		fmt.Println("No packages installed")
@@ -36,7 +36,7 @@ func listAll() error {
 func showPkgInfo(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 	p, ok := reg.Packages[strings.ToLower(pkgName)]
 	if !ok {
@@ -79,7 +79,7 @@ func showPkgInfo(pkgName string) error {
 func showPkgInfoJSON(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
 	if !ok {
