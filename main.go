@@ -9,11 +9,11 @@ var Version string
 
 func main() {
 	if len(os.Args) < 2 {
-		showHelp(mainHelp)
+		printHelp(mainHelp)
 		return
 	}
 	if os.Args[1] == "-h" || os.Args[1] == "--help" {
-		showHelp(mainHelp)
+		printHelp(mainHelp)
 		return
 	}
 	if os.Args[1] == "-v" || os.Args[1] == "--version" {
@@ -30,7 +30,7 @@ func main() {
 	switch os.Args[1] {
 	case "i", "install":
 		if needsHelp(args) || len(args) < 1 {
-			showHelp(installHelp)
+			printHelp(installHelp)
 			return
 		}
 		var name string
@@ -43,47 +43,17 @@ func main() {
 			}
 		}
 		err = installPkg(args[0], tag, name)
-	case "u":
-		if needsHelp(args) {
-			showHelp(updateHelp)
-			return
-		}
-		if len(args) < 1 {
-			err = updateAll()
-		} else {
-			err = updateTarget(resolvePkgName(args[0]))
-		}
-	case "r", "remove":
-		if needsHelp(args) || len(args) < 1 {
-			showHelp(removeHelp)
-			return
-		}
-		if len(args) >= 2 {
-			err = removeTag(resolvePkgName(args[0]), args[1])
-		} else {
-			err = removePkg(resolvePkgName(args[0]))
-		}
-	case "l":
-		if needsHelp(args) {
-			showHelp(listHelp)
-			return
-		}
-		if len(args) < 1 {
-			err = listAll()
-		} else if len(args) >= 2 && args[1] == "--json" {
-			err = showPkgInfoJSON(resolvePkgName(args[0]))
-		} else {
-			err = showPkgInfo(resolvePkgName(args[0]))
-		}
+
 	case "fetch":
 		if needsHelp(args) || len(args) < 2 {
-			showHelp(fetchHelp)
+			printHelp(fetchHelp)
 			return
 		}
 		err = fetchTag(resolvePkgName(args[0]), args[1])
+
 	case "use":
 		if needsHelp(args) || len(args) < 1 {
-			showHelp(useHelp)
+			printHelp(useHelp)
 			return
 		}
 		var tag string
@@ -91,15 +61,57 @@ func main() {
 			tag = args[1]
 		}
 		err = useTag(resolvePkgName(args[0]), tag)
+
+	case "u", "update":
+		if needsHelp(args) {
+			printHelp(updateHelp)
+			return
+		}
+		if len(args) < 1 {
+			err = updateAll()
+		} else {
+			err = updateTarget(resolvePkgName(args[0]))
+		}
+
+	case "s", "show":
+		if needsHelp(args) || len(args) < 1 {
+			printHelp(showHelp)
+			return
+		}
+		if len(args) >= 2 && args[1] == "--json" {
+			err = showPkgInfoJSON(resolvePkgName(args[0]))
+		} else {
+			err = showPkgInfo(resolvePkgName(args[0]))
+		}
+
+	case "l":
+		if needsHelp(args) {
+			printHelp(listHelp)
+			return
+		}
+		err = listAll()
+
+	case "r", "remove":
+		if needsHelp(args) || len(args) < 1 {
+			printHelp(removeHelp)
+			return
+		}
+		if len(args) >= 2 {
+			err = removeTag(resolvePkgName(args[0]), args[1])
+		} else {
+			err = removePkg(resolvePkgName(args[0]))
+		}
+
 	case "cache":
 		if needsHelp(args) || len(args) < 1 {
-			showHelp(cacheHelp)
+			printHelp(cacheHelp)
 			return
 		}
 		switch args[0] {
 		case "clear", "c":
 			err = clearCache()
 		}
+
 	default:
 		fmt.Println("Unknown command:", os.Args[1])
 		return

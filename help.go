@@ -16,8 +16,9 @@ COMMANDS:
   fetch      Fetch a specific tag
   use        Switch to another tag
   update     Update packages
-  remove     Remove a package or a tag
   list       List installed packages
+  show       Show package info
+  remove     Remove a package or a tag
   cache      Manage cached assets
 
 Run 'dpm <command> -h' for more information on a command.`
@@ -36,6 +37,22 @@ ARGUMENTS:
   tag      Optional. Choose a specific tag to install
   name     Optional. Override the installed package name (defaults to repo/file name)`
 
+const fetchHelp = `dpm fetch - download a tag
+
+  USAGE:
+    dpm fetch <pkg> <tag>
+
+  Downloads asset from the new tag to the cache directory (see 'cache_dir' in config)
+  and adds it to the package tags list.`
+
+const useHelp = `dpm use - switch to a different tag
+
+  USAGE:
+    dpm use <package> [tag]
+
+  Switches to a tag already present in the package's history without
+  fetching release info. The tag must have been installed before.`
+
 const updateHelp = `dpm update - check for and install updates
 
 USAGE:
@@ -46,6 +63,21 @@ any that have a newer release available.
 With a package name, checks and updates just the specified one.
 Note: only packages from Git hostings can be updated.`
 
+const showHelp = `dpm show - show package info
+
+USAGE:
+  dpm show <package> [--json]
+
+Shows detailed information about an installed package.
+With --json, outputs the data in JSON format.`
+
+const listHelp = `dpm list - list installed packages
+
+USAGE:
+  dpm list
+
+Lists all installed packages with their versions.`
+
 const removeHelp = `dpm remove - remove an installed package
 
 USAGE:
@@ -53,30 +85,6 @@ USAGE:
 
 With a tag removes only it, else removes the binary
 from your bin directory and drops it from the registry.`
-
-const listHelp = `dpm list - show installed packages
-
-USAGE:
-  dpm list [package]
-
-Without arguments, lists all installed packages with their versions.
-With a package name, shows details of a package.`
-
-const fetchHelp = `dpm fetch - download a tag
-
-USAGE:
-  dpm fetch <pkg> <tag>
-
-Downloads asset from the new tag to the cache directory (see 'cache_dir' in config)
-and adds it to the package tags list.`
-
-const useHelp = `dpm use - switch to a different tag
-
-USAGE:
-  dpm use <package> [tag]
-
-Switches to a tag already present in the package's history without
-fetching release info. The tag must have been installed before.`
 
 const cacheHelp = `dpm cache - manage downloads cache
 
@@ -89,6 +97,6 @@ const helpFooter = `
 Version: dpm %s
 More info: https://github.com/jvqtil/dpm`
 
-func showHelp(text string) {
+func printHelp(text string) {
 	view.Show(text + "\n" + fmt.Sprintf(helpFooter, Version))
 }
