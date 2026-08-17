@@ -16,8 +16,8 @@ COMMANDS:
   fetch      Fetch a specific tag
   use        Switch to another tag
   update     Update packages
-  list       List installed packages
   show       Show package info
+  list       List installed packages
   remove     Remove a package or a tag
   cache      Manage cached assets
 
