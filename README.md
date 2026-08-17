@@ -9,11 +9,22 @@ A package manager that just works. Insanely fast
   - GitHub releases
   - Direct URLs
   - Local binaries
-- Managing packages (Updating / Listing / Removing)
-- Version rollback - if you want to rollback to `v1.1.0` to `v1.0.9`, you don't need to re-download binary
-- Auto-matching binary from GitHub releases / unpacked archives based on OS and Architecture
-- Changing install path, cache directory, etc. See [config section](#config) for details
-- Automatically assumes source if not provided (`jvqtil/dpm` -> `github.com/jvqtil/dpm`). See [config section](#config) for details
+<details>
+  <summary>Basic package management</summary>
+
+  - Install
+  - Update
+  - Show info / list
+  - Remove
+</details>
+  
+- Tag management
+  - Offline tag rollback
+  - Fetching tags
+  - Switching current tag
+- Auto-matching binary from GitHub releases / unpacked archives based on OS and architecture
+- Configuring install path, cache directory, etc. See [config section](#config) for details
+- Automatic source assuming (`jvqtil/dpm` -> `github.com/jvqtil/dpm`). See [config section](#config) for details
 
 > [!NOTE]
 > dpm is in early stage. Please report any bugs / problems via GitHub Issues. Contributions are welcome!
