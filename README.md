@@ -43,47 +43,15 @@ dpm <command> [args]
 | Command | Alias | Description |
 |---|---|---|
 | `install` | `i` | Install a package |
+| `fetch` | | Fetch a tag |
+| `use` | | Switch to a tag |
 | `update` | `u` | Update packages |
-| `remove` | `r` | Remove a package |
+| `show` | `s` | Show package details |
 | `list` | `l` | List installed packages |
+| `remove` | `r` | Remove a package or a tag |
 | `cache` | | Manage cache |
 
 Run `dpm <command> -h` for details on any command.
-
-### Install
-
-```sh
-dpm i cli/cli                       # github.com/cli/cli, latest release
-dpm i cli/cli v2.40.0               # pin a specific tag
-dpm i ./mybinary                    # take a local file under management
-dpm i ~/Downloads/tool v2           # local file with a version label
-dpm i example.com/binary            # binary on a remote website
-```
-
-`dpm` looks at the release assets, tries to auto-match one for your OS/arch, and falls back to asking you to pick if it can't decide.
-
-### Update
-
-```sh
-dpm u               # check every installed package for updates
-dpm u gh-cli        # check and update just one
-```
-
-Local packages are skipped — reinstall them manually with `dpm i` if you have a new file.
-
-### Remove
-
-```sh
-dpm r gh-cli
-```
-
-### List
-
-```sh
-dpm l                 # everything installed
-dpm l gh-cli          # details of a package
-dpm l gh-cli --json   # same but in JSON
-```
 
 ## Config
 
