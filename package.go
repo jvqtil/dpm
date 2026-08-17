@@ -42,3 +42,14 @@ func (p *Package) SetCurrentTag(t Tag) error {
 	}
 	return fmt.Errorf("tag %q not found for package %s", t.Name, p.Name)
 }
+
+func (p *Package) RemoveTag(t Tag) error {
+	for i, existing := range p.Tags {
+		if existing.Name == t.Name {
+			p.Tags = append(p.Tags[:i], p.Tags[i+1:]...)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("tag %q not found for package %s", t.Name, p.Name)
+}

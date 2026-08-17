@@ -104,7 +104,7 @@ func useTag(name, tag string) error {
 		sort.Strings(tags)
 		slices.Reverse(tags)
 
-		tag, err = picker(tags, fmt.Sprintf("Select tag for %s", green(pkg.Name)))
+		tag, err = picker(tags, fmt.Sprintf("Select tag for %s - current %s", green(pkg.Name), pkg.CurrentTag.Name))
 		if err != nil {
 			return err
 		}
@@ -127,4 +127,49 @@ func useTag(name, tag string) error {
 	}
 
 	return switchTag(pkg, *target, fmt.Sprintf("Switched %s to %s", green(pkg.Name), tag))
+}
+
+func removeTag(name, tag string) error {
+	reg, err := loadRegistry()
+	if err != nil {
+		return err
+	}
+
+	pkg, ok := reg.Packages[strings.ToLower(name)]
+	if !ok {
+		return fmt.Errorf("package %s is not installed", name)
+	}
+
+	var target *Tag
+	for i, t := range pkg.Tags {
+		if t.Name == tag {
+			target = &pkg.Tags[i]
+			break
+		}
+	}
+
+	if target == nil {
+		return fmt.Errorf("tag %q not found for package %s", tag, name)
+	}
+
+	if pkg.CurrentTag.Name == target.Name {
+		fmt.Printf("Cannot remove current tag (%q), switch to another tag first\n", tag)
+		return nil
+	}
+
+	if !confirm(fmt.Sprintf("Remove tag %s from package %s?", target.Name, green(pkg.Name))) {
+		return nil
+	}
+
+	if err := pkg.RemoveTag(*target); err != nil {
+		return err
+	}
+	reg.Packages[pkg.Name] = pkg
+
+	if err := saveRegistry(reg); err != nil {
+		return err
+	}
+
+	fmt.Printf("=> Removed tag %s from package %s\n", tag, green(pkg.Name))
+	return nil
 }

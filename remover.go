@@ -11,21 +11,17 @@ func removePkg(pkgName string) error {
 		return err
 	}
 
-	p, ok := reg.Packages[strings.ToLower(pkgName)]
+	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	var tagVerb string
-	if p.CurrentTag.Name != "" {
-		tagVerb = "(" + p.CurrentTag.Name + ")"
-	}
-	if !confirm(fmt.Sprintf("Remove %s %s?", green(pkgName), tagVerb)) {
+	if !confirm(fmt.Sprintf("Remove %s?", green(pkgName))) {
 		fmt.Println("Aborted")
 		return nil
 	}
 
-	if err := rmBin(p.BinaryPath); err != nil {
+	if err := rmBin(pkg.BinaryPath); err != nil {
 		return fmt.Errorf("failed to remove binary: %w", err)
 	}
 

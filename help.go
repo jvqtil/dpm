@@ -48,9 +48,10 @@ Note: only packages from Git hostings can be updated.`
 const removeHelp = `dpm remove - remove an installed package
 
 USAGE:
-  dpm remove <package>
+  dpm remove <package> [tag]
 
-Removes the binary from your bin directory and drops it from the registry.`
+With a tag removes only it, else removes the binary
+from your bin directory and drops it from the registry.`
 
 const listHelp = `dpm list - show installed packages
 
