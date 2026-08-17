@@ -16,7 +16,7 @@ COMMANDS:
   fetch      Fetch a specific tag
   use        Switch to another tag
   update     Update packages
-  show       Show package info
+  show       Show package or tag info
   list       List installed packages
   remove     Remove a package or a tag
   cache      Manage cached assets
@@ -56,7 +56,7 @@ const useHelp = `dpm use - switch to a different tag
 const updateHelp = `dpm update - check for and install updates
 
 USAGE:
-  dpm u [package]
+  dpm update [package]
 
 Without arguments, checks all installed packages and offers to update
 any that have a newer release available.
@@ -66,9 +66,9 @@ Note: only packages from Git hostings can be updated.`
 const showHelp = `dpm show - show package info
 
 USAGE:
-  dpm show <package> [--json]
+  dpm show <package> [tag] [--json]
 
-Shows detailed information about an installed package.
+Shows detailed information about an installed package or specific tag.
 With --json, outputs the data in JSON format.`
 
 const listHelp = `dpm list - list installed packages

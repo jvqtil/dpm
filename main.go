@@ -78,10 +78,18 @@ func main() {
 			printHelp(showHelp)
 			return
 		}
-		if len(args) >= 2 && args[1] == "--json" {
-			err = showPkgInfoJSON(resolvePkgName(args[0]))
+
+		jsonFlag, cleanArgs := wantsJSON(args)
+		if len(cleanArgs) == 0 {
+			printHelp(showHelp)
+			return
+		}
+
+		pkg := resolvePkgName(cleanArgs[0])
+		if len(cleanArgs) == 1 {
+			err = showPkgInfo(pkg, jsonFlag)
 		} else {
-			err = showPkgInfo(resolvePkgName(args[0]))
+			err = showTagInfo(pkg, cleanArgs[1], jsonFlag)
 		}
 
 	case "l":
@@ -129,4 +137,17 @@ func needsHelp(args []string) bool {
 		}
 	}
 	return false
+}
+
+func wantsJSON(args []string) (bool, []string) {
+	var clean []string
+	found := false
+	for _, a := range args {
+		if a == "--json" {
+			found = true
+		} else {
+			clean = append(clean, a)
+		}
+	}
+	return found, clean
 }

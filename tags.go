@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"slices"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
 func switchTag(pkg Package, tag Tag, msg string) error {
@@ -128,6 +131,53 @@ func useTag(name, tag string) error {
 	}
 
 	return switchTag(pkg, *target, fmt.Sprintf("Switched %s to %s", green(pkg.Name), tag))
+}
+
+func showTagInfo(name, tag string, jsonOut bool) error {
+	reg, err := loadRegistry()
+	if err != nil {
+		return err
+	}
+
+	pkg, ok := reg.Packages[strings.ToLower(name)]
+	if !ok {
+		return fmt.Errorf("package %s is not installed", name)
+	}
+
+	var target *Tag
+	for i, t := range pkg.Tags {
+		if t.Name == tag {
+			target = &pkg.Tags[i]
+			break
+		}
+	}
+
+	if jsonOut {
+		data, err := json.MarshalIndent(target, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+	} else {
+
+		fmt.Println(border)
+		fmt.Printf("%s (%s)\n", green(pkg.Name), pkg.SourceType)
+		fmt.Println()
+
+		if target == nil {
+			return fmt.Errorf("tag %q not found for package %s", tag, pkg.Name)
+		}
+		fmt.Printf("%s\n", target.Name)
+		fmt.Printf("↓ %s %s\n", target.AssetName, humanize.Bytes(uint64(target.AssetSize)))
+		if pkg.SourceType == "local" {
+			fmt.Printf("from:\n  %s\n", target.AssetPath)
+		} else {
+			fmt.Printf("from:\n  %s\n", target.AssetURL)
+		}
+
+		fmt.Println(border)
+	}
+	return nil
 }
 
 func removeTag(name, tag string) error {
