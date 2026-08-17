@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -59,7 +60,7 @@ func installPkg(source, tag, name string) error {
 	fmt.Printf("%s - %s (%s)\n\n", green(pkg.Name), pkg.CurrentTag.Name, pkg.SourceType)
 	assetNameFmt := pkg.CurrentTag.AssetName
 	if pkg.SourceType == "local" {
-		assetNameFmt = pkg.CurrentTag.AssetPath
+		assetNameFmt = filepath.Base(pkg.CurrentTag.AssetPath)
 	}
 	fmt.Printf("↓ %s ", assetNameFmt)
 	if pkg.CurrentTag.AssetSize != 0 {
