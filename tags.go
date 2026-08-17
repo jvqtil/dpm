@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"sort"
 	"strings"
@@ -171,5 +172,17 @@ func removeTag(name, tag string) error {
 	}
 
 	fmt.Printf("=> Removed tag %s from package %s\n", tag, green(pkg.Name))
+
+	cachePath := resolveCachePath(pkg, *target)
+	if _, err := os.Stat(cachePath); err == nil {
+		if confirm(fmt.Sprintf("Remove cache for %s?", tag)) {
+			if err := os.RemoveAll(cachePath); err != nil {
+				return fmt.Errorf("failed to clear cache: %w", err)
+			} else {
+				fmt.Printf("=> Cleared cache for %s\n", tag)
+			}
+		}
+	}
+
 	return nil
 }

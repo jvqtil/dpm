@@ -60,9 +60,9 @@ func main() {
 		}
 		if len(args) >= 2 {
 			err = removeTag(resolvePkgName(args[0]), args[1])
-			return
+		} else {
+			err = removePkg(resolvePkgName(args[0]))
 		}
-		err = removePkg(resolvePkgName(args[0]))
 	case "l":
 		if needsHelp(args) {
 			showHelp(listHelp)
