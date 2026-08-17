@@ -20,6 +20,10 @@ func resolveDirect(source, name, tag string) (*Package, error) {
 		assetURL = "https://" + source
 	}
 
+	if tag == "" {
+		tag = filepath.Base(source)
+	}
+
 	return &Package{
 		Name:       name,
 		SourceType: "direct",
