@@ -13,17 +13,17 @@ import (
 )
 
 func switchTag(pkg Package, tag Tag, msg string) error {
+	reg, err := loadRegistry()
+	if err != nil {
+		return err
+	}
+
 	src, err := resolveAsset(pkg, &tag)
 	if err != nil {
 		return err
 	}
 
 	if err := cpToDest(src, pkg.BinaryPath); err != nil {
-		return err
-	}
-
-	reg, err := loadRegistry()
-	if err != nil {
 		return err
 	}
 
