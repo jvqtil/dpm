@@ -94,7 +94,10 @@ func installPkg(source, tag, name string) error {
 	// fill missing entries in package
 	pkg.InstalledAt = time.Now().Format(time.RFC3339)
 	pkg.LastUpdated = pkg.InstalledAt
-	pkg.Tags = []Tag{pkg.CurrentTag}
+	if exists && ePkg.SourceType == pkg.SourceType && ePkg.Source == pkg.Source {
+		pkg.Tags = append([]Tag(nil), ePkg.Tags...)
+	}
+	pkg.AddTag(pkg.CurrentTag)
 	reg.Packages[name] = *pkg
 
 	if err := saveRegistry(reg); err != nil {
