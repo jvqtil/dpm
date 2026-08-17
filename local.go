@@ -28,6 +28,10 @@ func resolveLocal(source, tag, name string) (*Package, error) {
 		return nil, fmt.Errorf("file not found: %w", err)
 	}
 
+	if tag == "" {
+		tag = filepath.Base(source)
+	}
+
 	return &Package{
 		Name:       name,
 		SourceType: "local",

@@ -12,19 +12,21 @@ USAGE:
   dpm <command> [args]
 
 COMMANDS:
-  i, install    Install a package
-  u, update     Update packages
-  r, remove     Remove a package
-  l, list       List installed packages
-  cache         Manage cached downloads
+  install    Install a package
+  fetch      Fetch a specific tag
+  use        Switch to another tag
+  update     Update packages
+  show       Show package or tag info
+  list       List installed packages
+  remove     Remove a package or a tag
+  cache      Manage cached assets
 
 Run 'dpm <command> -h' for more information on a command.`
 
 const installHelp = `dpm install - install a package
 
 USAGE:
-  dpm i <source> [name]
-  dpm install <source> [name]
+  dpm install <source> [tag] [name]
 
 ARGUMENTS:
   source   Where to install from:
@@ -32,61 +34,71 @@ ARGUMENTS:
              github.com/owner/repo   explicit github source
              ./path, /path, ~/path   local file
              example.com/binary      direct url
-           Append @tag to pin a specific version (github) or label a local file:
-             owner/repo@v1.2.3
-             ./mybinary@v1.0.0
-  name     Optional. Override the installed package name (defaults to repo/file name)
+  tag      Optional. Choose a specific tag to install
+  name     Optional. Override the installed package name (defaults to repo/file name)`
 
-EXAMPLES:
-  dpm i cli/cli
-  dpm i cli/cli@v2.40.0
-  dpm i github.com/cli/cli gh-cli
-  dpm i ./mybinary
-  dpm i ~/Downloads/tool@v2
-  dpm i example.com/binary`
+const fetchHelp = `dpm fetch - download a tag
+
+  USAGE:
+    dpm fetch <pkg> <tag>
+
+  Downloads asset from the new tag to the cache directory (see 'cache_dir' in config)
+  and adds it to the package tags list.`
+
+const useHelp = `dpm use - switch to a different tag
+
+  USAGE:
+    dpm use <package> [tag]
+
+  Switches to a tag already present in the package's history without
+  fetching release info. The tag must have been installed before.`
 
 const updateHelp = `dpm update - check for and install updates
 
 USAGE:
-  dpm u
-  dpm u <package>
+  dpm update [package]
 
 Without arguments, checks all installed packages and offers to update
-any that have a newer release available. With a package name, checks
-and updates just the specified one.
-Note: local and direct packages can't be updated. Reinstall instead`
+any that have a newer release available.
+With a package name, checks and updates just the specified one.
+Note: only packages from Git hostings can be updated.`
+
+const showHelp = `dpm show - show package info
+
+USAGE:
+  dpm show <package> [tag] [--json]
+
+Shows detailed information about an installed package or specific tag.
+With --json, outputs the data in JSON format.`
+
+const listHelp = `dpm list - list installed packages
+
+USAGE:
+  dpm list
+
+Lists all installed packages with their versions.`
 
 const removeHelp = `dpm remove - remove an installed package
 
 USAGE:
-  dpm r <package>
-  dpm remove <package>
+  dpm remove <package> [tag]
 
-Removes the binary from your bin directory and drops it from the registry.`
-
-const listHelp = `dpm list - show installed packages
-
-USAGE:
-  dpm l
-  dpm l <package>
-  dpm list <package>
-
-Without arguments, lists all installed packages with their versions.
-With a package name, shows full details: source, binary path, install date, etc.`
+With a tag removes only it, else removes the binary
+from your bin directory and drops it from the registry.`
 
 const cacheHelp = `dpm cache - manage downloads cache
 
 USAGE:
-  dpm cache clear
-  dpm cache clean
-  dpm cache wipe
+  dpm cache clear                  Clear all cache
+  dpm cache clear <package>        Clear cache for a package (all tags)
+  dpm cache clear <package> <tag>  Clear cache for a specific tag
 
-Clears cached downloads from "cache_dir" in your config (default: "~/.cache/dpm").`
+Cache directory is set by "cache_dir" in config (default: "~/.cache/dpm").`
 
 const helpFooter = `
 Version: dpm %s
 More info: https://github.com/jvqtil/dpm`
 
-func showHelp(text string) {
+func printHelp(text string) {
 	view.Show(text + "\n" + fmt.Sprintf(helpFooter, Version))
 }

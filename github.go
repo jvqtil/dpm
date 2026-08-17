@@ -70,7 +70,8 @@ func isGithubSource(source string) bool {
 }
 
 func checkGithubTag(source, tag string) (*ghRelease, error) {
-	fmt.Printf("=> Fetching releases of %s%s\n", source, getTagVerb(tag))
+	// Maybe print it with --verbose flag?
+	//fmt.Printf("=> Fetching releases of %s%s\n", source, getTagVerb(tag))
 	release, err := fetchGhRelease(source, tag)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch release: %w", err)
@@ -78,11 +79,7 @@ func checkGithubTag(source, tag string) (*ghRelease, error) {
 	return release, nil
 }
 
-func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
-	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
-		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
-	}
-
+func resolveGhTag(release *ghRelease) (*Tag, error) {
 	asset := matchGhAsset(release.Assets)
 	if asset == nil {
 		var err error
@@ -92,18 +89,31 @@ func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
 		}
 	}
 
+	return &Tag{
+		Name:      release.Name,
+		AssetName: asset.Name,
+		AssetURL:  asset.URL,
+		AssetSize: asset.Size,
+	}, nil
+}
+
+func resolveGithub(source, name string, release *ghRelease) (*Package, error) {
+	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
+		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
+	}
+
+	tag, err := resolveGhTag(release)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Package{
 		Name:       name,
 		SourceType: getSourceDomain(source),
 		Source:     source,
 		BinaryPath: filepath.Join(cfg.BinDir, name),
-		CurrentTag: Tag{
-			Name:      release.Name,
-			AssetName: asset.Name,
-			AssetURL:  asset.URL,
-			AssetSize: asset.Size,
-		},
-		Tags: []Tag{},
+		CurrentTag: *tag,
+		Tags:       []Tag{},
 	}, nil
 }
 
@@ -133,7 +143,7 @@ func pickGhAsset(assets []ghAsset) (*ghAsset, error) {
 		names[i] = a.Name
 	}
 
-	picked, err := pickAsset(names, fmt.Sprintf("Found %d assets - host: %s/%s", len(assets), runtime.GOOS, runtime.GOARCH))
+	picked, err := picker(names, fmt.Sprintf("Found %d assets - host: %s/%s", len(assets), runtime.GOOS, runtime.GOARCH))
 	if err != nil {
 		return nil, err
 	}
