@@ -63,6 +63,10 @@ func (p *Package) ResolveCachePath() string {
 		cachePath = filepath.Join(cfg.CacheDir, p.Source)
 	case "direct":
 		cachePath = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(p.Source)), p.Name)
+	case "local":
+		return ""
+	default:
+		return ""
 	}
 	p.CachePath = cachePath
 	return cachePath
