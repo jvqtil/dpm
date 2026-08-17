@@ -43,9 +43,14 @@ func clearPkgCache(name, tag string) error {
 		return fmt.Errorf("cant clear cache of a local package")
 	}
 
-	if strings.ContainsAny(tag, `/\`) || strings.Contains(tag, "..") {
+	if tag != "" && (strings.ContainsAny(tag, `/\`) || strings.Contains(tag, "..")) {
 		return fmt.Errorf("invalid tag: %s contains path separators or traversal components", tag)
 	}
 
-	return clearCache(filepath.Join(pkg.ResolveCachePath(), tag))
+	cachePath := pkg.ResolveCachePath()
+	if cachePath == "" {
+		return fmt.Errorf("cannot resolve cache path for package source type: %s", pkg.SourceType)
+	}
+
+	return clearCache(filepath.Join(cachePath, tag))
 }

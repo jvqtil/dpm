@@ -9,7 +9,11 @@ import (
 )
 
 func resolveAsset(pkg Package, tag *Tag) (string, error) {
-	src, err := downloadAsset(tag, filepath.Join(pkg.ResolveCachePath(), tag.Name))
+	cachePath := pkg.ResolveCachePath()
+	if cachePath == "" {
+		return "", fmt.Errorf("cannot resolve cache path for package source type: %s", pkg.SourceType)
+	}
+	src, err := downloadAsset(tag, filepath.Join(cachePath, tag.Name))
 	if err != nil {
 		return "", err
 	}

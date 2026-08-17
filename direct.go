@@ -22,6 +22,12 @@ func resolveDirect(source, name, tag string) (*Package, error) {
 
 	if tag == "" {
 		tag = filepath.Base(source)
+		// Sanitize derived tag to prevent path traversal
+		if strings.ContainsAny(tag, `/\`) || strings.Contains(tag, "..") {
+			tag = strings.ReplaceAll(tag, "/", "_")
+			tag = strings.ReplaceAll(tag, "\\", "_")
+			tag = strings.ReplaceAll(tag, "..", "_")
+		}
 	}
 
 	return &Package{
