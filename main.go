@@ -115,9 +115,16 @@ func main() {
 			printHelp(cacheHelp)
 			return
 		}
-		switch args[0] {
-		case "clear", "c":
-			err = clearCache()
+		if args[0] == "clear" || args[0] == "c" {
+			if len(args) >= 2 {
+				if len(args) >= 3 {
+					err = clearPkgCache(resolvePkgName(args[1]), args[2])
+				} else {
+					err = clearPkgCache(resolvePkgName(args[1]), "")
+				}
+			} else {
+				err = clearCache(cfg.CacheDir)
+			}
 		}
 
 	default:

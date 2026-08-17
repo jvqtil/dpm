@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
@@ -65,7 +66,7 @@ func fetchTag(name, tag string) error {
 			return err
 		}
 	default:
-		fmt.Println("Fetching is only available for GitHub packages")
+		fmt.Println("Fetching is only available for packages from Git hostings")
 		return nil
 	}
 
@@ -223,7 +224,7 @@ func removeTag(name, tag string) error {
 
 	fmt.Printf("=> Removed tag %s from package %s\n", tag, green(pkg.Name))
 
-	cachePath := resolveCachePath(pkg, *target)
+	cachePath := filepath.Join(pkg.ResolveCachePath(), target.Name)
 	if _, err := os.Stat(cachePath); err == nil {
 		if confirm(fmt.Sprintf("Remove cache for %s?", tag)) {
 			if err := os.RemoveAll(cachePath); err != nil {

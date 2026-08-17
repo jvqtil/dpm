@@ -9,7 +9,7 @@ import (
 )
 
 func resolveAsset(pkg Package, tag *Tag) (string, error) {
-	src, err := downloadAsset(tag, resolveCachePath(pkg, *tag))
+	src, err := downloadAsset(tag, filepath.Join(pkg.ResolveCachePath(), tag.Name))
 	if err != nil {
 		return "", err
 	}
@@ -116,15 +116,4 @@ func matchByOsArch(names []string) (string, bool) {
 	}
 
 	return "", false
-}
-
-func resolveCachePath(p Package, t Tag) string {
-	var cachePath string
-	switch p.SourceType {
-	case "github.com":
-		cachePath = filepath.Join(cfg.CacheDir, p.Source, t.Name)
-	default:
-		cachePath = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(p.Source)), p.Name, t.Name)
-	}
-	return cachePath
 }

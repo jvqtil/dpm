@@ -89,9 +89,11 @@ from your bin directory and drops it from the registry.`
 const cacheHelp = `dpm cache - manage downloads cache
 
 USAGE:
-  dpm cache clear
+  dpm cache clear                  Clear all cache
+  dpm cache clear <package>        Clear cache for a package (all tags)
+  dpm cache clear <package> <tag>  Clear cache for a specific tag
 
-Clears cached downloads from "cache_dir" in your config (default: "~/.cache/dpm").`
+Cache directory is set by "cache_dir" in config (default: "~/.cache/dpm").`
 
 const helpFooter = `
 Version: dpm %s

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 )
 
 type Package struct {
@@ -11,6 +12,7 @@ type Package struct {
 	SourceType  string `json:"source_type"`
 	Source      string `json:"source"`
 	BinaryPath  string `json:"binary_path"`
+	CachePath   string `json:"cache_path"`
 	InstalledAt string `json:"installed_at"`
 	LastUpdated string `json:"last_updated"`
 }
@@ -52,4 +54,16 @@ func (p *Package) RemoveTag(t Tag) error {
 	}
 
 	return fmt.Errorf("tag %q not found for package %s", t.Name, p.Name)
+}
+
+func (p *Package) ResolveCachePath() string {
+	var cachePath string
+	switch p.SourceType {
+	case "github.com":
+		cachePath = filepath.Join(cfg.CacheDir, p.Source)
+	case "direct":
+		cachePath = filepath.Join(cfg.CacheDir, getSourceDomain(normalizeSource(p.Source)), p.Name)
+	}
+	p.CachePath = cachePath
+	return cachePath
 }
