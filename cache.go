@@ -38,5 +38,9 @@ func clearPkgCache(name, tag string) error {
 		return fmt.Errorf("package %s is not installed", name)
 	}
 
+	if pkg.SourceType == "local" {
+		return fmt.Errorf("cant clear cache of a local package")
+	}
+
 	return clearCache(filepath.Join(pkg.ResolveCachePath(), tag))
 }
