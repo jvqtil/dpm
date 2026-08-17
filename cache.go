@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 )
@@ -40,6 +41,10 @@ func clearPkgCache(name, tag string) error {
 
 	if pkg.SourceType == "local" {
 		return fmt.Errorf("cant clear cache of a local package")
+	}
+
+	if strings.ContainsAny(tag, `/\`) || strings.Contains(tag, "..") {
+		return fmt.Errorf("invalid tag: %s contains path separators or traversal components", tag)
 	}
 
 	return clearCache(filepath.Join(pkg.ResolveCachePath(), tag))
