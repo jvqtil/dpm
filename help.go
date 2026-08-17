@@ -12,12 +12,13 @@ USAGE:
   dpm <command> [args]
 
 COMMANDS:
-  i - install    Install a package
-  u - update     Update packages
-  r - remove     Remove a package
-  l - list       List installed packages
-  use            Switch to another tag
-  cache          Manage cached assets
+  install    Install a package
+  fetch      Fetch a specific tag
+  use        Switch to another tag
+  update     Update packages
+  remove     Remove a package or a tag
+  list       List installed packages
+  cache      Manage cached assets
 
 Run 'dpm <command> -h' for more information on a command.`
 
@@ -64,7 +65,7 @@ With a package name, shows details of a package.`
 const fetchHelp = `dpm fetch - download a tag
 
 USAGE:
-  dpm fetch <pkg/source> <tag>
+  dpm fetch <pkg> <tag>
 
 Downloads asset from the new tag to the cache directory (see 'cache_dir' in config)
 and adds it to the package tags list.`
