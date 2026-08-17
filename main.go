@@ -70,7 +70,7 @@ func main() {
 		if len(args) < 1 {
 			err = updateAll()
 		} else {
-			err = updateTarget(resolvePkgName(args[0]))
+			err = updatePkg(resolvePkgName(args[0]))
 		}
 
 	case "s", "show":

@@ -30,6 +30,35 @@ func resolvePkgName(input string) string {
 	return s
 }
 
+func resolvePkgTag(pkgName, tagName string) (*Registry, *Package, *Tag, error) {
+	reg, err := loadRegistry()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	if !ok {
+		return nil, nil, nil, fmt.Errorf("package %s is not installed", pkgName)
+	}
+
+	if tagName == "" {
+		return reg, &pkg, nil, nil
+	}
+
+	var tag *Tag
+	for i, t := range pkg.Tags {
+		if t.Name == tagName {
+			tag = &pkg.Tags[i]
+			break
+		}
+	}
+	if tag == nil {
+		return nil, nil, nil, fmt.Errorf("tag %q not found for package %s", tagName, pkgName)
+	}
+
+	return reg, &pkg, tag, nil
+}
+
 func confirm(prompt string) bool {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("%s [y/N]: ", prompt)

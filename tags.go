@@ -43,7 +43,7 @@ func switchTag(pkg Package, tag Tag, msg string) error {
 	return nil
 }
 
-func fetchTag(name, tag string) error {
+func fetchTag(name, tagName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
 		return err
@@ -54,14 +54,14 @@ func fetchTag(name, tag string) error {
 		return fmt.Errorf("package %s is not installed", name)
 	}
 
-	var targetTag *Tag
+	var tag *Tag
 	switch pkg.SourceType {
 	case "github.com":
-		release, err := checkGithubTag(pkg.Source, tag)
+		release, err := checkGithubTag(pkg.Source, tagName)
 		if err != nil {
 			return err
 		}
-		targetTag, err = resolveGhTag(release)
+		tag, err = resolveGhTag(release)
 		if err != nil {
 			return err
 		}
@@ -70,35 +70,30 @@ func fetchTag(name, tag string) error {
 		return nil
 	}
 
-	_, err = resolveAsset(pkg, targetTag)
+	_, err = resolveAsset(pkg, tag)
 	if err != nil {
 		return err
 	}
 
-	pkg.AddTag(*targetTag)
+	pkg.AddTag(*tag)
 	reg.Packages[pkg.Name] = pkg
 
 	if err := saveRegistry(reg); err != nil {
 		return err
 	}
 
-	fmt.Printf("=> Fetched tag %s for package %s\n", targetTag.Name, green(pkg.Name))
+	fmt.Printf("=> Fetched tag %s for package %s\n", tag.Name, green(pkg.Name))
 
 	return nil
 }
 
-func useTag(name, tag string) error {
-	reg, err := loadRegistry()
+func useTag(name, tagName string) error {
+	_, pkg, _, err := resolvePkgTag(name, tagName)
 	if err != nil {
 		return err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(name)]
-	if !ok {
-		return fmt.Errorf("package %s is not installed", name)
-	}
-
-	if tag == "" {
+	if tagName == "" {
 		if len(pkg.Tags) == 0 {
 			return fmt.Errorf("no tags found for %s", pkg.Name)
 		}
@@ -109,52 +104,39 @@ func useTag(name, tag string) error {
 		sort.Strings(tags)
 		slices.Reverse(tags)
 
-		tag, err = picker(tags, fmt.Sprintf("Select tag for %s - current %s", green(pkg.Name), pkg.CurrentTag.Name))
+		tagName, err = picker(tags, fmt.Sprintf("Select tag for %s - current %s", green(pkg.Name), pkg.CurrentTag.Name))
 		if err != nil {
 			return err
 		}
 	}
 
-	if pkg.CurrentTag.Name == tag {
-		fmt.Printf("%s is already on %s\n", green(pkg.Name), tag)
+	if pkg.CurrentTag.Name == tagName {
+		fmt.Printf("%s is already on %s\n", green(pkg.Name), tagName)
 		return nil
 	}
 
-	var target *Tag
+	var tag *Tag
 	for i, t := range pkg.Tags {
-		if t.Name == tag {
-			target = &pkg.Tags[i]
+		if t.Name == tagName {
+			tag = &pkg.Tags[i]
 			break
 		}
 	}
-	if target == nil {
-		return fmt.Errorf("tag %q not found for package %s", tag, pkg.Name)
+	if tag == nil {
+		return fmt.Errorf("tag %q not found for package %s", tagName, pkg.Name)
 	}
 
-	return switchTag(pkg, *target, fmt.Sprintf("Switched %s to %s", green(pkg.Name), tag))
+	return switchTag(*pkg, *tag, fmt.Sprintf("Switched %s to %s", green(pkg.Name), tagName))
 }
 
-func showTagInfo(name, tag string, jsonOut bool) error {
-	reg, err := loadRegistry()
+func showTagInfo(name, tagName string, jsonOut bool) error {
+	_, pkg, tag, err := resolvePkgTag(name, tagName)
 	if err != nil {
 		return err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(name)]
-	if !ok {
-		return fmt.Errorf("package %s is not installed", name)
-	}
-
-	var target *Tag
-	for i, t := range pkg.Tags {
-		if t.Name == tag {
-			target = &pkg.Tags[i]
-			break
-		}
-	}
-
 	if jsonOut {
-		data, err := json.MarshalIndent(target, "", "  ")
+		data, err := json.MarshalIndent(tag, "", "  ")
 		if err != nil {
 			return err
 		}
@@ -165,15 +147,15 @@ func showTagInfo(name, tag string, jsonOut bool) error {
 		fmt.Printf("%s (%s)\n", green(pkg.Name), pkg.SourceType)
 		fmt.Println()
 
-		if target == nil {
-			return fmt.Errorf("tag %q not found for package %s", tag, pkg.Name)
+		if tag == nil {
+			return fmt.Errorf("tag %q not found for package %s", tagName, pkg.Name)
 		}
-		fmt.Printf("%s\n", target.Name)
-		fmt.Printf("↓ %s %s\n", target.AssetName, humanize.Bytes(uint64(target.AssetSize)))
+		fmt.Printf("%s\n", tag.Name)
+		fmt.Printf("↓ %s %s\n", tag.AssetName, humanize.Bytes(uint64(tag.AssetSize)))
 		if pkg.SourceType == "local" {
-			fmt.Printf("from:\n  %s\n", target.AssetPath)
+			fmt.Printf("from:\n  %s\n", tag.AssetPath)
 		} else {
-			fmt.Printf("from:\n  %s\n", target.AssetURL)
+			fmt.Printf("from:\n  %s\n", tag.AssetURL)
 		}
 
 		fmt.Println(border)
@@ -181,56 +163,45 @@ func showTagInfo(name, tag string, jsonOut bool) error {
 	return nil
 }
 
-func removeTag(name, tag string) error {
-	reg, err := loadRegistry()
+func removeTag(name, tagName string) error {
+	reg, pkg, tag, err := resolvePkgTag(name, tagName)
 	if err != nil {
 		return err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(name)]
-	if !ok {
-		return fmt.Errorf("package %s is not installed", name)
+	if tag == nil {
+		return fmt.Errorf("tag %q not found for package %s", tagName, name)
 	}
 
-	var target *Tag
-	for i, t := range pkg.Tags {
-		if t.Name == tag {
-			target = &pkg.Tags[i]
-			break
-		}
-	}
-
-	if target == nil {
-		return fmt.Errorf("tag %q not found for package %s", tag, name)
-	}
-
-	if pkg.CurrentTag.Name == target.Name {
-		fmt.Printf("Cannot remove current tag (%q), switch to another tag first\n", tag)
+	if pkg.CurrentTag.Name == tag.Name {
+		fmt.Printf("Cannot remove current tag (%q), switch to another tag first\n", tag.Name)
 		return nil
 	}
 
-	if !confirm(fmt.Sprintf("Remove tag %s from package %s?", target.Name, green(pkg.Name))) {
+	if !confirm(fmt.Sprintf("Remove tag %s from package %s?", tag.Name, green(pkg.Name))) {
 		return nil
 	}
 
-	if err := pkg.RemoveTag(*target); err != nil {
+	if err := pkg.RemoveTag(*tag); err != nil {
 		return err
 	}
-	reg.Packages[pkg.Name] = pkg
+	reg.Packages[pkg.Name] = *pkg
 
 	if err := saveRegistry(reg); err != nil {
 		return err
 	}
 
-	fmt.Printf("=> Removed tag %s from package %s\n", tag, green(pkg.Name))
+	fmt.Printf("=> Removed tag %s from package %s\n", tag.Name, green(pkg.Name))
 
-	cachePath := filepath.Join(pkg.ResolveCachePath(), target.Name)
-	if _, err := os.Stat(cachePath); err == nil {
-		if confirm(fmt.Sprintf("Remove cache for %s?", tag)) {
-			if err := os.RemoveAll(cachePath); err != nil {
-				return fmt.Errorf("failed to clear cache: %w", err)
-			} else {
-				fmt.Printf("=> Cleared cache for %s\n", tag)
+	if pkg.SourceType != "local" {
+		cachePath := filepath.Join(pkg.ResolveCachePath(), tag.Name)
+		if _, err := os.Stat(cachePath); err == nil {
+			if confirm(fmt.Sprintf("Remove cache for %s?", tag.Name)) {
+				if err := os.RemoveAll(cachePath); err != nil {
+					return fmt.Errorf("failed to clear cache: %w", err)
+				} else {
+					fmt.Printf("=> Cleared cache for %s\n", tag.Name)
+				}
 			}
 		}
 	}

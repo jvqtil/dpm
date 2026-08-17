@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func updateTarget(pkgName string) error {
+func updatePkg(pkgName string) error {
 	reg, err := loadRegistry()
 	if err != nil {
 		return err
