@@ -92,7 +92,7 @@ func main() {
 			err = showTagInfo(pkg, cleanArgs[1], jsonFlag)
 		}
 
-	case "l":
+	case "l", "list":
 		if needsHelp(args) {
 			printHelp(listHelp)
 			return
