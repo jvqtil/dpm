@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 )
 
 func removePkg(pkgName string) error {
@@ -11,7 +10,7 @@ func removePkg(pkgName string) error {
 		return err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	pkg, ok := reg.Packages[pkgName]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
@@ -25,7 +24,7 @@ func removePkg(pkgName string) error {
 		return fmt.Errorf("failed to remove binary: %w", err)
 	}
 
-	delete(reg.Packages, strings.ToLower(pkgName))
+	delete(reg.Packages, pkgName)
 
 	if err := saveRegistry(reg); err != nil {
 		return fmt.Errorf("failed to update registry: %w", err)

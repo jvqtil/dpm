@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 )
 
 func updatePkg(pkgName string) error {
@@ -11,7 +10,7 @@ func updatePkg(pkgName string) error {
 		return err
 	}
 
-	ePkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	ePkg, ok := reg.Packages[pkgName]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -15,7 +14,7 @@ func showPkgInfo(pkgName string, jsonOut bool) error {
 	if err != nil {
 		return err
 	}
-	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	pkg, ok := reg.Packages[pkgName]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"slices"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -49,7 +48,7 @@ func fetchTag(name, tagName string) error {
 		return err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(name)]
+	pkg, ok := reg.Packages[name]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", name)
 	}

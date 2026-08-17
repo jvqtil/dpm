@@ -36,7 +36,7 @@ func resolvePkgTag(pkgName, tagName string) (*Registry, *Package, *Tag, error) {
 		return nil, nil, nil, err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	pkg, ok := reg.Packages[pkgName]
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("package %s is not installed", pkgName)
 	}

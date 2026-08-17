@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/dustin/go-humanize"
 )
@@ -34,7 +33,7 @@ func clearPkgCache(name, tag string) error {
 		return err
 	}
 
-	pkg, ok := reg.Packages[strings.ToLower(name)]
+	pkg, ok := reg.Packages[name]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", name)
 	}

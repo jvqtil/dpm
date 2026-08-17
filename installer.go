@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -13,7 +12,6 @@ func installPkg(source, tag, name string) error {
 	if name == "" {
 		name = resolvePkgName(source)
 	}
-	name = strings.ToLower(name)
 
 	reg, err := loadRegistry()
 	if err != nil {
