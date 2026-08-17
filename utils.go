@@ -6,9 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
-	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 )
 
@@ -17,15 +17,9 @@ var (
 	red   = color.New(color.FgRed).SprintFunc()
 	cyan  = color.New(color.FgCyan).SprintFunc()
 	bold  = color.New(color.Bold).SprintFunc()
-)
 
-func resolveTag(input string) (source, tag string) {
-	s := strings.TrimSpace(input)
-	if idx := strings.LastIndex(s, "@"); idx != -1 {
-		return s[:idx], s[idx+1:]
-	}
-	return s, ""
-}
+	border = strings.Repeat("═", 40)
+)
 
 func resolvePkgName(input string) string {
 	s := strings.TrimSuffix(input, "/")
@@ -36,12 +30,33 @@ func resolvePkgName(input string) string {
 	return s
 }
 
-func getTagVerb(tag string) string {
-	var tagVerb string
-	if tag != "" {
-		tagVerb = "@" + tag
+func resolvePkgTag(pkgName, tagName string) (*Registry, *Package, *Tag, error) {
+	reg, err := loadRegistry()
+	if err != nil {
+		return nil, nil, nil, err
 	}
-	return tagVerb
+
+	pkg, ok := reg.Packages[pkgName]
+	if !ok {
+		return nil, nil, nil, fmt.Errorf("package %s is not installed", pkgName)
+	}
+
+	if tagName == "" {
+		return reg, &pkg, nil, nil
+	}
+
+	var tag *Tag
+	for i, t := range pkg.Tags {
+		if t.Name == tagName {
+			tag = &pkg.Tags[i]
+			break
+		}
+	}
+	if tag == nil {
+		return nil, nil, nil, fmt.Errorf("tag %q not found for package %s", tagName, pkgName)
+	}
+
+	return reg, &pkg, tag, nil
 }
 
 func confirm(prompt string) bool {
@@ -54,6 +69,38 @@ func confirm(prompt string) bool {
 	}
 	answer := strings.ToLower(strings.TrimSpace(line))
 	return answer == "y" || answer == "yes"
+}
+
+func picker(items []string, prompt string) (string, error) {
+	if len(items) == 0 {
+		return "", fmt.Errorf("nothing to pick from")
+	}
+
+	fmt.Printf("\n%s\n", prompt)
+	for i, n := range items {
+		fmt.Printf("%d) %s\n", i+1, n)
+	}
+
+	fmt.Printf("\nYour pick? ")
+	reader := bufio.NewReader(os.Stdin)
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("failed to read input: %w", err)
+	}
+	line = strings.TrimSpace(line)
+	if line == "" {
+		os.Exit(0)
+	}
+
+	choice, err := strconv.Atoi(line)
+	if err != nil {
+		return "", fmt.Errorf("invalid input: %w", err)
+	}
+	if choice < 1 || choice > len(items) {
+		return "", fmt.Errorf("choice %d out of range", choice)
+	}
+
+	return items[choice-1], nil
 }
 
 func runSudo(args ...string) error {
@@ -85,8 +132,6 @@ func cpToDest(src, dest string) error {
 	if !os.IsPermission(err) {
 		return err
 	}
-
-	fmt.Println("=> Copying binary, may require password")
 
 	if err := runSudo("mkdir", "-p", filepath.Dir(dest)); err != nil {
 		return fmt.Errorf("failed to create a directory: %w", err)
@@ -131,23 +176,4 @@ func dirSize(path string) (size int64) {
 		return nil
 	})
 	return
-}
-
-func clearCache() error {
-	cacheSize := dirSize(cfg.CacheDir)
-	cacheSizeFmt := humanize.Bytes(uint64((cacheSize)))
-	if cacheSize == 0 {
-		fmt.Println("=> Cache directory is empty, nothing to clear")
-		return nil
-	}
-	if !confirm(fmt.Sprintf("=> Cache directory size: %s.\nClear cache?", red(cacheSizeFmt))) {
-		return nil
-	}
-
-	if err := os.RemoveAll(cfg.CacheDir); err != nil {
-		return fmt.Errorf("failed to clear cache directory: %w", err)
-	}
-
-	fmt.Printf("=> Cleared %s of cache\n", red(cacheSizeFmt))
-	return nil
 }

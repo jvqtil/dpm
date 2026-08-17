@@ -2,59 +2,21 @@ package main
 
 import (
 	"fmt"
-	"strings"
-	"time"
 )
 
-func updatePkg(pkg Package, newTag Tag) error {
-	src, err := resolveAsset(pkg, &newTag)
+func updatePkg(pkgName string) error {
+	reg, err := loadRegistry()
 	if err != nil {
 		return err
 	}
-	if newTag.AssetPath == "" {
-		newTag.AssetPath = src
-	}
 
-	dest := pkg.BinaryPath
-
-	if err := cpToDest(src, dest); err != nil {
-		return fmt.Errorf("copy failed: %w", err)
-	}
-
-	reg, err := loadRegistry()
-	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
-	}
-
-	oldTag := pkg.CurrentTag.Name
-	pkg.AddTag(newTag)
-	if err := pkg.SetCurrentTag(newTag); err != nil {
-		return err
-	}
-	pkg.LastUpdated = time.Now().Format(time.RFC3339)
-	reg.Packages[pkg.Name] = pkg
-
-	if err := saveRegistry(reg); err != nil {
-		return fmt.Errorf("failed to save registry: %w", err)
-	}
-
-	fmt.Printf("=> Updated package %s from %s to %s\n", green(pkg.Name), oldTag, newTag.Name)
-	return nil
-}
-
-func updateTarget(pkgName string) error {
-	reg, err := loadRegistry()
-	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
-	}
-
-	existingPkg, ok := reg.Packages[strings.ToLower(pkgName)]
+	ePkg, ok := reg.Packages[pkgName]
 	if !ok {
 		return fmt.Errorf("package %s is not installed", pkgName)
 	}
 
-	var newPkg *Package
-	switch existingPkg.SourceType {
+	var tag *Tag
+	switch ePkg.SourceType {
 	case "local":
 		fmt.Printf("=> %s is a local package. Local packages can't be updated. Please reinstall it manually\n", green(pkgName))
 		return nil
@@ -62,31 +24,31 @@ func updateTarget(pkgName string) error {
 		fmt.Printf("=> %s was installed from direct URL. dpm can't fetch updates for it. Please reinstall it manually\n", green(pkgName))
 		return nil
 	case "github.com":
-		release, err := checkGithubTag(existingPkg.Source, "")
+		release, err := checkGithubTag(ePkg.Source, "")
 		if err != nil {
 			return fmt.Errorf("failed to check version: %w", err)
 		}
 
-		if existingPkg.CurrentTag.Name == release.Name {
-			fmt.Printf("%s is already up to date (%s)\n", green(pkgName), existingPkg.CurrentTag.Name)
+		if ePkg.CurrentTag.Name == release.Name {
+			fmt.Printf("%s is already up to date (%s)\n", green(pkgName), ePkg.CurrentTag.Name)
 			return nil
 		}
 
-		newPkg, err = resolveGithub(existingPkg.Source, existingPkg.Name, release)
+		tag, err = resolveGhTag(release)
 		if err != nil {
 			return err
 		}
 	default:
-		return fmt.Errorf("unsupported source type %s", existingPkg.SourceType)
+		return fmt.Errorf("unsupported source type %s", ePkg.SourceType)
 	}
 
-	return updatePkg(existingPkg, newPkg.CurrentTag)
+	return switchTag(ePkg, *tag, fmt.Sprintf("Updated package %s to %s", green(ePkg.Name), tag.Name))
 }
 
 func updateAll() error {
 	reg, err := loadRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to load registry: %w", err)
+		return err
 	}
 
 	if len(reg.Packages) == 0 {
@@ -135,11 +97,11 @@ func updateAll() error {
 
 	for _, u := range updates {
 		fmt.Println()
-		newPkg, err := resolveGithub(u.item.Source, u.item.Name, u.release)
+		tag, err := resolveGhTag(u.release)
 		if err != nil {
 			return err
 		}
-		if err := updatePkg(u.item, newPkg.CurrentTag); err != nil {
+		if err := switchTag(u.item, *tag, fmt.Sprintf("Updated package %s to %s", green(u.item.Name), tag.Name)); err != nil {
 			fmt.Printf("failed to update %s: %v\n", u.item.Name, err)
 		}
 	}

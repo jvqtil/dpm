@@ -48,16 +48,16 @@ func sniffArchiveKind(path string) (ArchiveKind, error) {
 	return NotArchive, nil
 }
 
-func isDocFile(name string) bool {
-	name = strings.ToLower(name)
-	base := filepath.Base(name)
+func isDocFile(filename string) bool {
+	filename = strings.ToLower(filename)
+	base := filepath.Base(filename)
 	docNames := []string{"license", "readme", "changelog", "notice"}
 	for _, d := range docNames {
 		if strings.HasPrefix(base, d) {
 			return true
 		}
 	}
-	return strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".txt")
+	return strings.HasSuffix(filename, ".md") || strings.HasSuffix(filename, ".txt")
 }
 
 func extractArchive(archivePath string, kind ArchiveKind) ([]string, error) {

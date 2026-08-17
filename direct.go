@@ -10,11 +10,24 @@ func resolveDirect(source, name, tag string) (*Package, error) {
 	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.HasPrefix(name, "..") {
 		return nil, fmt.Errorf("invalid package name: %s contains path separators or traversal components", name)
 	}
+	if !strings.Contains(source, "/") {
+		return nil, fmt.Errorf("'%s' doesnt look like a valid source", source)
+	}
 
 	assetURL := source
 
 	if !strings.HasPrefix(source, "http://") && !strings.HasPrefix(source, "https://") {
 		assetURL = "https://" + source
+	}
+
+	if tag == "" {
+		tag = filepath.Base(source)
+		// Sanitize derived tag to prevent path traversal
+		if strings.ContainsAny(tag, `/\`) || strings.Contains(tag, "..") {
+			tag = strings.ReplaceAll(tag, "/", "_")
+			tag = strings.ReplaceAll(tag, "\\", "_")
+			tag = strings.ReplaceAll(tag, "..", "_")
+		}
 	}
 
 	return &Package{
