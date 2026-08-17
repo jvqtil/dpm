@@ -51,6 +51,8 @@ dpm <command> [args]
 | `remove` | `r` | Remove a package or a tag |
 | `cache` | | Manage cache |
 
+To see more help, use `dpm --help`
+
 Run `dpm <command> -h` for details on any command.
 
 ## Config
