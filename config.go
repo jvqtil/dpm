@@ -24,13 +24,16 @@ func defaultConfig() config {
 	}
 	return config{
 		BinDir:           "/usr/local/bin",
-		CacheDir:         cacheDir,
+		CacheDir:         filepath.Join(cacheDir, "dpm"),
 		AssumeSourceType: "github.com",
 	}
 }
 
 func initConfig() error {
-	configDir, _ := os.UserConfigDir()
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return fmt.Errorf("failed to determine config dir: %w", err)
+	}
 	path := filepath.Join(configDir, "dpm", "config.toml")
 
 	data, err := os.ReadFile(path)
