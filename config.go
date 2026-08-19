@@ -17,17 +17,21 @@ type config struct {
 var cfg config
 
 func defaultConfig() config {
-	homeDir, _ := os.UserHomeDir()
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	return config{
 		BinDir:           "/usr/local/bin",
-		CacheDir:         filepath.Join(homeDir, ".cache", "dpm"),
+		CacheDir:         cacheDir,
 		AssumeSourceType: "github.com",
 	}
 }
 
 func initConfig() error {
-	homeDir, _ := os.UserHomeDir()
-	path := filepath.Join(homeDir, ".config", "dpm", "config.toml")
+	configDir, _ := os.UserConfigDir()
+	path := filepath.Join(configDir, "dpm", "config.toml")
 
 	data, err := os.ReadFile(path)
 	if err != nil {

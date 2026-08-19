@@ -12,8 +12,12 @@ type Registry struct {
 }
 
 func getRegPath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".local", "state", "dpm", "registry.json")
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return filepath.Join(configDir, "dpm", "registry.json")
 }
 
 func loadRegistry() (*Registry, error) {
