@@ -20,6 +20,7 @@ COMMANDS:
   list       List installed packages
   remove     Remove a package or a tag
   cache      Manage cached assets
+  migrate    Migrate data from older versions
 
 Run 'dpm <command> -h' for more information on a command.`
 
@@ -94,6 +95,23 @@ USAGE:
   dpm cache clear <package> <tag>  Clear cache for a specific tag
 
 Cache directory is set by "cache_dir" in config (default: "~/.cache/dpm").`
+
+const migrationHelp = `dpm migration - migrate data from older versions
+
+USAGE:
+dpm migration <version>
+
+MIGRATIONS:
+v0.0.4 Migrate dpm data after the v0.0.4 path changes
+
+The v0.0.4 migration moves existing dpm configuration, registry,
+and cache data from the old paths to their current locations.
+
+The migration is safe to run when the new locations already exist;
+existing files and directories are not overwritten.
+
+NOTE:
+The migration suite is temporary and will be removed in v1.0.0.`
 
 const helpFooter = `
 Version: dpm %s
