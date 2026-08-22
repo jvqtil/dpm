@@ -9,8 +9,8 @@ import (
 // This is a migration suite, which is going to be removed in v1.0.0
 func runMigration(migration string) error {
 	switch migration {
-	case "v0.0.4":
-		fmt.Println("In v0.0.4 there was a paths change")
+	case "v0.0.5":
+		fmt.Println("In v0.0.5 there was a paths change")
 		if !confirm("Do you want to run a migration?") {
 			return nil
 		}
@@ -27,7 +27,7 @@ func runMigration(migration string) error {
 	return nil
 }
 
-// Paths changed in v0.0.4, this is a migration for it
+// Paths changed in v0.0.5, this is a migration for it
 func migrateAfterPathsChange() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
