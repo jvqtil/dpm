@@ -127,6 +127,13 @@ func main() {
 			}
 		}
 
+	case "migration", "migrate":
+		if needsHelp(args) || len(args) < 1 {
+			printHelp(migrationHelp)
+			return
+		}
+		err = runMigration(args[0])
+
 	default:
 		fmt.Println("Unknown command:", os.Args[1])
 		return
