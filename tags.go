@@ -25,16 +25,10 @@ func switchTag(pkg Package, tag Tag, msg string) error {
 
 	// Backup existing binary before replacement
 	backupPath := pkg.BinaryPath + ".backup"
-	if _, err := os.Stat(pkg.BinaryPath); err == nil {
-		data, err := os.ReadFile(pkg.BinaryPath)
-		if err != nil {
-			return fmt.Errorf("failed to read existing binary for backup: %w", err)
-		}
-		if err := os.WriteFile(backupPath, data, 0755); err != nil {
-			return fmt.Errorf("failed to create backup: %w", err)
-		}
-		defer os.Remove(backupPath) // Clean up backup on success
+	if err = cpToDest(pkg.BinaryPath, backupPath); err != nil {
+		return err
 	}
+	defer rmBin(backupPath) // Clean up backup on success
 
 	if err := cpToDest(src, pkg.BinaryPath); err != nil {
 		return err
@@ -44,7 +38,9 @@ func switchTag(pkg Package, tag Tag, msg string) error {
 	if err := pkg.SetCurrentTag(tag); err != nil {
 		// Restore backup on failure
 		if _, statErr := os.Stat(backupPath); statErr == nil {
-			os.Rename(backupPath, pkg.BinaryPath)
+			if err = cpToDest(backupPath, pkg.BinaryPath); err != nil {
+				return err
+			}
 		}
 		return err
 	}
@@ -54,7 +50,9 @@ func switchTag(pkg Package, tag Tag, msg string) error {
 	if err := saveRegistry(reg); err != nil {
 		// Restore backup on failure
 		if _, statErr := os.Stat(backupPath); statErr == nil {
-			os.Rename(backupPath, pkg.BinaryPath)
+			if err = cpToDest(backupPath, pkg.BinaryPath); err != nil {
+				return err
+			}
 		}
 		return err
 	}
